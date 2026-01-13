@@ -4,6 +4,7 @@ import { ViewMode } from './types';
 import ZeroHunter from './components/ZeroHunter';
 import Landscape3D from './components/Landscape3D';
 import PrimeStaircase from './components/PrimeStaircase';
+import ConceptMap from './components/ConceptMap';
 
 const App: React.FC = () => {
   const [tStart, setTStart] = useState<number>(0);
@@ -31,7 +32,7 @@ const App: React.FC = () => {
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-slate-950 text-slate-100">
       {/* Sidebar Controls */}
-      <aside className="w-full md:w-80 p-6 flex flex-col gap-8 bg-slate-900 border-r border-slate-800 shadow-xl z-10 shrink-0">
+      <aside className="w-full md:w-80 p-6 flex flex-col gap-8 bg-slate-900 border-r border-slate-800 shadow-xl z-10 shrink-0 overflow-y-auto">
         <header>
           <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
             Riemann Vision
@@ -47,6 +48,16 @@ const App: React.FC = () => {
               View Strategy
             </label>
             <div className="grid grid-cols-1 gap-2 p-1 bg-slate-950 rounded-lg">
+              <button
+                onClick={() => setViewMode(ViewMode.CONCEPT_MAP)}
+                className={`w-full py-2 px-3 rounded-md text-xs font-medium transition-all ${
+                  viewMode === ViewMode.CONCEPT_MAP
+                    ? 'bg-cyan-600 text-white shadow-lg'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Complex Concept Map
+              </button>
               <button
                 onClick={() => setViewMode(ViewMode.ZERO_HUNTER)}
                 className={`w-full py-2 px-3 rounded-md text-xs font-medium transition-all ${
@@ -80,7 +91,14 @@ const App: React.FC = () => {
             </div>
           </section>
 
-          {viewMode !== ViewMode.PRIME_STAIRCASE ? (
+          {viewMode === ViewMode.CONCEPT_MAP ? (
+            <section className="p-4 bg-slate-950/50 rounded-lg border border-slate-800">
+              <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-2">Static Overview</h4>
+              <p className="text-xs text-slate-400 leading-tight">
+                This diagram provides a spatial overview of the key mathematical structures discussed in the Riemann Hypothesis.
+              </p>
+            </section>
+          ) : viewMode !== ViewMode.PRIME_STAIRCASE ? (
             <>
               <section>
                 <div className="flex justify-between items-center mb-3">
@@ -178,6 +196,8 @@ const App: React.FC = () => {
           <p className="text-[11px] text-slate-500 leading-tight">
             {viewMode === ViewMode.PRIME_STAIRCASE 
               ? "Legendre discovered that subtracting ~1.08366 from the logarithm makes the curve fit much better at small scales."
+              : viewMode === ViewMode.CONCEPT_MAP
+              ? "The 'Trivial Zeros' occur at every negative even integer (-2, -4, -6...) and are perfectly understood."
               : "The first zero occurs at t ≈ 14.13. Notice how the magnitude drops to 0 at these specific heights along the critical line."
             }
           </p>
@@ -187,6 +207,9 @@ const App: React.FC = () => {
       {/* Main Visualization Canvas */}
       <main className="flex-1 p-4 md:p-8 relative min-h-0 flex flex-col">
         <div className="w-full h-full relative flex-1">
+          {viewMode === ViewMode.CONCEPT_MAP && (
+            <ConceptMap />
+          )}
           {viewMode === ViewMode.ZERO_HUNTER && (
             <ZeroHunter tStart={tStart} tEnd={tEnd} iterations={iterations} />
           )}
