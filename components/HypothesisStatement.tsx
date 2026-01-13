@@ -4,7 +4,7 @@ import Plot from 'react-plotly.js';
 
 const HypothesisStatement: React.FC = () => {
   const [scannerSigma, setScannerSigma] = useState<number>(0);
-  const requestRef = useRef<number>();
+  const requestRef = useRef<number>(null);
   const startTimeRef = useRef<number>(Date.now());
 
   useEffect(() => {
@@ -57,13 +57,12 @@ const HypothesisStatement: React.FC = () => {
           <h3 className="text-xs font-bold text-slate-500 uppercase mb-4 tracking-tighter">Mathematical Translation</h3>
           <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
              <code className="text-lg font-mono text-cyan-400">
-               &zeta;(s) = 0 <br/>
-               &rArr; Re(s) = 1/2
+               ζ(s) = 0 <br/>
+               ⇒ Re(s) = 1/2
              </code>
           </div>
           <p className="text-[10px] text-slate-500 mt-4 leading-tight">
-            {/* Fix: Escaped < characters to prevent them from being parsed as JSX tags which caused errors for the capitalized Re name */}
-            For all $s$ such that $0 &lt; Re(s) &lt; 1$. These are the "Non-Trivial" zeros.
+            For all <i className="text-slate-400">s</i> such that 0 &lt; Re(s) &lt; 1. These are the "Non-Trivial" zeros.
           </p>
         </div>
       </div>
@@ -71,10 +70,12 @@ const HypothesisStatement: React.FC = () => {
       {/* Animated Scanner Visual */}
       <div className="flex-1 bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden shadow-2xl relative">
         <div className="absolute top-6 left-8 z-10">
-          <div className={`flex items-center gap-3 px-4 py-2 rounded-full border transition-colors ${isScanningCriticalLine ? 'bg-cyan-500/20 border-cyan-500' : 'bg-slate-950/50 border-slate-800'}`}>
+          <div className={`flex items-center gap-3 px-4 py-2 rounded-full border transition-all duration-300 ${isScanningCriticalLine ? 'bg-cyan-500/20 border-cyan-500' : 'bg-slate-950/50 border-slate-800'}`}>
             <div className={`w-2 h-2 rounded-full animate-pulse ${isScanningCriticalLine ? 'bg-cyan-400' : 'bg-red-500'}`} />
             <span className="text-[10px] font-black uppercase tracking-widest text-white">
-              {isScanningCriticalLine ? "Match Detected: Critical Line" : `Scanning Domain: Re(s) = ${scannerSigma.toFixed(3)}`}
+              {isScanningCriticalLine 
+                ? "MATCH FOUND: Non-Trivial Zeros detected!" 
+                : "Scanning... Sector Clear."}
             </span>
           </div>
         </div>
@@ -92,13 +93,18 @@ const HypothesisStatement: React.FC = () => {
               hoverinfo: 'skip'
             },
             {
-              // Zeros on the line
+              // Zeros on the line - Hidden until discovery
               x: [0.5, 0.5, 0.5, 0.5],
               y: [14.13, 21.02, 25.01, 30.42],
               type: 'scatter',
               mode: 'markers',
               name: 'Known Zeros',
-              marker: { color: '#22d3ee', size: 12, line: { color: '#ffffff', width: 1 } },
+              marker: { 
+                color: '#22d3ee', 
+                size: 12, 
+                line: { color: '#ffffff', width: 1 },
+                opacity: isScanningCriticalLine ? 1 : 0 
+              },
               hoverinfo: 'skip'
             },
             {
