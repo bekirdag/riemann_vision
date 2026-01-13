@@ -11,11 +11,21 @@ const App: React.FC = () => {
   const [iterations, setIterations] = useState<number>(150);
   const [xMax, setXMax] = useState<number>(100);
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.ZERO_HUNTER);
+  
+  // Custom Formula State
+  const [formulaInput, setFormulaInput] = useState<string>("x / (log(x) - 1.08366)");
+  const [plottedFormula, setPlottedFormula] = useState<string>("x / (log(x) - 1.08366)");
+  const [formulaError, setFormulaError] = useState<string | null>(null);
 
   const handleRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value);
     setTStart(Math.max(0, val - 15));
     setTEnd(val + 15);
+  };
+
+  const handlePlotFormula = () => {
+    setPlottedFormula(formulaInput);
+    setFormulaError(null);
   };
 
   return (
@@ -114,26 +124,52 @@ const App: React.FC = () => {
               </section>
             </>
           ) : (
-            <section>
-              <div className="flex justify-between items-center mb-3">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Search Range (X)
+            <>
+              <section>
+                <div className="flex justify-between items-center mb-3">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Search Range (X)
+                  </label>
+                  <span className="text-cyan-400 font-mono text-sm">{xMax}</span>
+                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max="1000"
+                  step="10"
+                  value={xMax}
+                  onChange={(e) => setXMax(parseInt(e.target.value))}
+                  className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                />
+              </section>
+
+              <section>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+                  Test Your Formula (f(x))
                 </label>
-                <span className="text-cyan-400 font-mono text-sm">{xMax}</span>
-              </div>
-              <input
-                type="range"
-                min="10"
-                max="1000"
-                step="10"
-                value={xMax}
-                onChange={(e) => setXMax(parseInt(e.target.value))}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-              />
-              <p className="text-[11px] text-slate-500 mt-2">
-                Increase the limit to see the divergence and approximation at larger scales.
-              </p>
-            </section>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={formulaInput}
+                    onChange={(e) => setFormulaInput(e.target.value)}
+                    placeholder="e.x. x / (log(x) - 1)"
+                    className="flex-1 bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-cyan-500 transition-all"
+                  />
+                  <button
+                    onClick={handlePlotFormula}
+                    className="bg-purple-600 hover:bg-purple-500 text-white text-[10px] px-3 py-1.5 rounded font-bold uppercase tracking-tighter"
+                  >
+                    Plot
+                  </button>
+                </div>
+                {formulaError && (
+                  <p className="text-[10px] text-red-400 mt-1 font-medium">{formulaError}</p>
+                )}
+                <p className="text-[10px] text-slate-500 mt-2 italic leading-tight">
+                  Try <code className="text-slate-400">x / (log(x) - 1)</code> to see how shifting the denominator changes the fit!
+                </p>
+              </section>
+            </>
           )}
         </div>
 
@@ -141,7 +177,7 @@ const App: React.FC = () => {
           <h3 className="text-xs font-bold text-slate-400 uppercase mb-2">Did you know?</h3>
           <p className="text-[11px] text-slate-500 leading-tight">
             {viewMode === ViewMode.PRIME_STAIRCASE 
-              ? "The 'gap' between the stairs and the curve is bounded by the Riemann Hypothesis if it holds true."
+              ? "Legendre discovered that subtracting ~1.08366 from the logarithm makes the curve fit much better at small scales."
               : "The first zero occurs at t ≈ 14.13. Notice how the magnitude drops to 0 at these specific heights along the critical line."
             }
           </p>
@@ -158,7 +194,11 @@ const App: React.FC = () => {
             <Landscape3D tStart={tStart} tEnd={tEnd} iterations={iterations} />
           )}
           {viewMode === ViewMode.PRIME_STAIRCASE && (
-            <PrimeStaircase xMax={xMax} />
+            <PrimeStaircase 
+              xMax={xMax} 
+              customFormula={plottedFormula} 
+              onFormulaError={setFormulaError}
+            />
           )}
         </div>
       </main>

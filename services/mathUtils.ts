@@ -96,11 +96,9 @@ export function calculatePrimeData(max: number) {
     xValues.push(x);
     piX.push(count);
     
-    // Gauss approximation: x / ln(x)
-    // Avoid ln(1) = 0 division
     const approx = x > 1 ? x / Math.log(x) : 0;
     gaussApprox.push(approx);
   }
   
-  return { xValues, piX, gaussApprox };
+  return { xValues, piX, gaussApprox, isPrime };
 }
