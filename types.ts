@@ -6,7 +6,8 @@ export interface ComplexData {
 
 export enum ViewMode {
   ZERO_HUNTER = 'ZERO_HUNTER',
-  LANDSCAPE_3D = 'LANDSCAPE_3D'
+  LANDSCAPE_3D = 'LANDSCAPE_3D',
+  PRIME_STAIRCASE = 'PRIME_STAIRCASE'
 }
 
 export interface PlotParams {

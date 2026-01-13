@@ -1,13 +1,15 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { ViewMode } from './types';
 import ZeroHunter from './components/ZeroHunter';
 import Landscape3D from './components/Landscape3D';
+import PrimeStaircase from './components/PrimeStaircase';
 
 const App: React.FC = () => {
   const [tStart, setTStart] = useState<number>(0);
   const [tEnd, setTEnd] = useState<number>(30);
   const [iterations, setIterations] = useState<number>(150);
+  const [xMax, setXMax] = useState<number>(100);
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.ZERO_HUNTER);
 
   const handleRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,10 +36,10 @@ const App: React.FC = () => {
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
               View Strategy
             </label>
-            <div className="flex p-1 bg-slate-950 rounded-lg">
+            <div className="grid grid-cols-1 gap-2 p-1 bg-slate-950 rounded-lg">
               <button
                 onClick={() => setViewMode(ViewMode.ZERO_HUNTER)}
-                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+                className={`w-full py-2 px-3 rounded-md text-xs font-medium transition-all ${
                   viewMode === ViewMode.ZERO_HUNTER
                     ? 'bg-cyan-600 text-white shadow-lg'
                     : 'text-slate-400 hover:text-slate-200'
@@ -47,7 +49,7 @@ const App: React.FC = () => {
               </button>
               <button
                 onClick={() => setViewMode(ViewMode.LANDSCAPE_3D)}
-                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+                className={`w-full py-2 px-3 rounded-md text-xs font-medium transition-all ${
                   viewMode === ViewMode.LANDSCAPE_3D
                     ? 'bg-cyan-600 text-white shadow-lg'
                     : 'text-slate-400 hover:text-slate-200'
@@ -55,73 +57,108 @@ const App: React.FC = () => {
               >
                 3D Landscape
               </button>
+              <button
+                onClick={() => setViewMode(ViewMode.PRIME_STAIRCASE)}
+                className={`w-full py-2 px-3 rounded-md text-xs font-medium transition-all ${
+                  viewMode === ViewMode.PRIME_STAIRCASE
+                    ? 'bg-cyan-600 text-white shadow-lg'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Prime Staircase
+              </button>
             </div>
           </section>
 
-          <section>
-            <div className="flex justify-between items-center mb-3">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Imaginary Center (t)
-              </label>
-              <span className="text-cyan-400 font-mono text-sm">
-                {((tStart + tEnd) / 2).toFixed(1)}
-              </span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="150"
-              step="1"
-              value={(tStart + tEnd) / 2}
-              onChange={handleRangeChange}
-              className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-            />
-            <div className="flex justify-between text-[10px] text-slate-600 mt-1 uppercase font-bold">
-              <span>Low Range</span>
-              <span>High Range</span>
-            </div>
-            <p className="text-[11px] text-slate-500 mt-2 italic">
-              Showing range: [{tStart.toFixed(0)}, {tEnd.toFixed(0)}]
-            </p>
-          </section>
+          {viewMode !== ViewMode.PRIME_STAIRCASE ? (
+            <>
+              <section>
+                <div className="flex justify-between items-center mb-3">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Imaginary Center (t)
+                  </label>
+                  <span className="text-cyan-400 font-mono text-sm">
+                    {((tStart + tEnd) / 2).toFixed(1)}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="150"
+                  step="1"
+                  value={(tStart + tEnd) / 2}
+                  onChange={handleRangeChange}
+                  className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                />
+                <p className="text-[11px] text-slate-500 mt-2 italic">
+                  Showing range: [{tStart.toFixed(0)}, {tEnd.toFixed(0)}]
+                </p>
+              </section>
 
-          <section>
-            <div className="flex justify-between items-center mb-3">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Precision (N)
-              </label>
-              <span className="text-cyan-400 font-mono text-sm">{iterations} terms</span>
-            </div>
-            <input
-              type="range"
-              min="10"
-              max="500"
-              step="10"
-              value={iterations}
-              onChange={(e) => setIterations(parseInt(e.target.value))}
-              className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-            />
-            <p className="text-[11px] text-slate-500 mt-2">
-              Higher terms increase accuracy in the critical strip but require more computation.
-            </p>
-          </section>
+              <section>
+                <div className="flex justify-between items-center mb-3">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Precision (N)
+                  </label>
+                  <span className="text-cyan-400 font-mono text-sm">{iterations} terms</span>
+                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max="500"
+                  step="10"
+                  value={iterations}
+                  onChange={(e) => setIterations(parseInt(e.target.value))}
+                  className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                />
+              </section>
+            </>
+          ) : (
+            <section>
+              <div className="flex justify-between items-center mb-3">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Search Range (X)
+                </label>
+                <span className="text-cyan-400 font-mono text-sm">{xMax}</span>
+              </div>
+              <input
+                type="range"
+                min="10"
+                max="1000"
+                step="10"
+                value={xMax}
+                onChange={(e) => setXMax(parseInt(e.target.value))}
+                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+              />
+              <p className="text-[11px] text-slate-500 mt-2">
+                Increase the limit to see the divergence and approximation at larger scales.
+              </p>
+            </section>
+          )}
         </div>
 
         <div className="mt-auto p-4 bg-slate-950/50 rounded-xl border border-slate-800/50">
           <h3 className="text-xs font-bold text-slate-400 uppercase mb-2">Did you know?</h3>
           <p className="text-[11px] text-slate-500 leading-tight">
-            The first zero occurs at t ≈ 14.13. Notice how the magnitude drops to 0 at these specific heights along the critical line.
+            {viewMode === ViewMode.PRIME_STAIRCASE 
+              ? "The 'gap' between the stairs and the curve is bounded by the Riemann Hypothesis if it holds true."
+              : "The first zero occurs at t ≈ 14.13. Notice how the magnitude drops to 0 at these specific heights along the critical line."
+            }
           </p>
         </div>
       </aside>
 
       {/* Main Visualization Canvas */}
-      <main className="flex-1 p-4 md:p-8 relative min-h-0">
-        <div className="w-full h-full relative">
-          {viewMode === ViewMode.ZERO_HUNTER ? (
+      <main className="flex-1 p-4 md:p-8 relative min-h-0 flex flex-col">
+        <div className="w-full h-full relative flex-1">
+          {viewMode === ViewMode.ZERO_HUNTER && (
             <ZeroHunter tStart={tStart} tEnd={tEnd} iterations={iterations} />
-          ) : (
+          )}
+          {viewMode === ViewMode.LANDSCAPE_3D && (
             <Landscape3D tStart={tStart} tEnd={tEnd} iterations={iterations} />
+          )}
+          {viewMode === ViewMode.PRIME_STAIRCASE && (
+            <PrimeStaircase xMax={xMax} />
           )}
         </div>
       </main>
