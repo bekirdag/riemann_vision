@@ -11,19 +11,21 @@ import MixingDeck from './components/MixingDeck';
 import DerivativeLink from './components/DerivativeLink';
 import IntroMystery from './components/IntroMystery';
 import EulerGoldenKey from './components/EulerGoldenKey';
+import RiemannTwist from './components/RiemannTwist';
 
 const VIEW_SEQUENCE = [
   { mode: ViewMode.INTRO_MYSTERY, label: "0. The Great Mystery", color: "bg-slate-700" },
   { mode: ViewMode.EULER_GOLDEN_KEY, label: "1. Euler's Golden Key", color: "bg-amber-600" },
-  { mode: ViewMode.CONCEPT_MAP, label: "2. The Concept Map", color: "bg-cyan-600" },
-  { mode: ViewMode.LANDSCAPE_3D, label: "3. The Landscape", color: "bg-cyan-600" },
-  { mode: ViewMode.ZERO_HUNTER, label: "4. The Zero Hunter", color: "bg-cyan-600" },
+  { mode: ViewMode.RIEMANN_TWIST, label: "2. Riemann's Twist", color: "bg-indigo-600" },
+  { mode: ViewMode.CONCEPT_MAP, label: "3. The Concept Map", color: "bg-cyan-600" },
+  { mode: ViewMode.LANDSCAPE_3D, label: "4. The Landscape", color: "bg-cyan-600" },
+  { mode: ViewMode.ZERO_HUNTER, label: "5. The Zero Hunter", color: "bg-cyan-600" },
   { mode: null, label: "DIVIDER" }, // Divider marker
-  { mode: ViewMode.ATOMIC_WAVE, label: "5. The Atomic Wave", color: "bg-amber-600" },
-  { mode: ViewMode.MIXING_DECK, label: "6. The Mixing Deck", color: "bg-indigo-600" },
-  { mode: ViewMode.HARMONIC_SYNTHESIS, label: "7. Harmonic Synthesis", color: "bg-rose-600" },
-  { mode: ViewMode.DERIVATIVE_LINK, label: "8. The Derivative Link", color: "bg-emerald-600" },
-  { mode: ViewMode.PRIME_STAIRCASE, label: "9. Prime Verification", color: "bg-cyan-600" },
+  { mode: ViewMode.ATOMIC_WAVE, label: "6. The Atomic Wave", color: "bg-amber-600" },
+  { mode: ViewMode.MIXING_DECK, label: "7. The Mixing Deck", color: "bg-indigo-600" },
+  { mode: ViewMode.HARMONIC_SYNTHESIS, label: "8. Harmonic Synthesis", color: "bg-rose-600" },
+  { mode: ViewMode.DERIVATIVE_LINK, label: "9. The Derivative Link", color: "bg-emerald-600" },
+  { mode: ViewMode.PRIME_STAIRCASE, label: "10. Prime Verification", color: "bg-cyan-600" },
 ];
 
 const App: React.FC = () => {
@@ -150,6 +152,7 @@ const App: React.FC = () => {
                 viewMode !== ViewMode.ATOMIC_WAVE &&
                 viewMode !== ViewMode.INTRO_MYSTERY &&
                 viewMode !== ViewMode.EULER_GOLDEN_KEY &&
+                viewMode !== ViewMode.RIEMANN_TWIST &&
                 viewMode !== ViewMode.DERIVATIVE_LINK ? (
               <>
                 <section className="mb-6">
@@ -199,6 +202,7 @@ const App: React.FC = () => {
                 <p className="text-xs text-slate-400 leading-tight">
                   {viewMode === ViewMode.INTRO_MYSTERY && "Primes appear random and unpredictable. Is there a hidden order?"}
                   {viewMode === ViewMode.EULER_GOLDEN_KEY && "Euler discovered that studying integers is identical to studying primes."}
+                  {viewMode === ViewMode.RIEMANN_TWIST && "Moving from 1D to 2D. How imaginary powers turn numbers into spirals."}
                   {viewMode === ViewMode.CONCEPT_MAP && "A spatial overview of the complex plane and the locations of the zeros."}
                   {viewMode === ViewMode.ATOMIC_WAVE && "Watch how a single zero creates a vibrational frequency in log-space."}
                   {viewMode === ViewMode.MIXING_DECK && "Combining harmonics to isolate prime signals through interference."}
@@ -219,6 +223,8 @@ const App: React.FC = () => {
               ? "Primes are the building blocks of all numbers, yet they follow no simple pattern."
               : viewMode === ViewMode.EULER_GOLDEN_KEY
               ? "The Bridge: Integers and Primes are two sides of the same coin."
+              : viewMode === ViewMode.RIEMANN_TWIST
+              ? "The Twist: Imaginary numbers add rotation, turning lines into wave-like spirals."
               : viewMode === ViewMode.CONCEPT_MAP
               ? "All non-trivial zeros are conjectured to lie exactly on the line Re(s) = 0.5."
               : viewMode === ViewMode.MIXING_DECK
@@ -240,6 +246,7 @@ const App: React.FC = () => {
         <div className="w-full h-full relative flex-1 mb-4">
           {viewMode === ViewMode.INTRO_MYSTERY && <IntroMystery />}
           {viewMode === ViewMode.EULER_GOLDEN_KEY && <EulerGoldenKey />}
+          {viewMode === ViewMode.RIEMANN_TWIST && <RiemannTwist />}
           {viewMode === ViewMode.CONCEPT_MAP && <ConceptMap />}
           {viewMode === ViewMode.DERIVATIVE_LINK && <DerivativeLink />}
           {viewMode === ViewMode.ZERO_HUNTER && <ZeroHunter tStart={tStart} tEnd={tEnd} iterations={iterations} />}
