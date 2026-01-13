@@ -1,7 +1,8 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
 import { RIEMANN_ZEROS } from '../services/mathUtils';
+import StoryLayout, { StoryStep } from './StoryLayout';
 
 const HARMONIC_COLORS = [
   '#22d3ee', // Cyan
@@ -16,13 +17,37 @@ const HARMONIC_COLORS = [
   '#ef4444'  // Red
 ];
 
-const MixingDeck: React.FC = () => {
-  // Support 10 harmonics. First 3 ON by default.
-  const [activeHarmonics, setActiveHarmonics] = useState<boolean[]>([
-    true, true, true, false, false, false, false, false, false, false
-  ]);
+/**
+ * Small SVG component to visualize the specific frequency of a harmonic
+ */
+const HarmonicSparkline: React.FC<{ gamma: number; color: string; active: boolean }> = ({ gamma, color, active }) => {
+  const points = 40;
+  const width = 80;
+  const height = 24;
   
-  const gammas = RIEMANN_ZEROS.slice(0, 10);
+  const pathData = useMemo(() => {
+    let d = `M 0 ${height / 2}`;
+    for (let i = 0; i <= points; i++) {
+      const x = (i / points) * width;
+      // Use log scale matching the main plot roughly for visual consistency
+      const xVal = 2 + (i / points) * 20; 
+      const y = (height / 2) + (Math.cos(gamma * Math.log(xVal)) * (height / 2.5));
+      d += ` L ${x} ${y}`;
+    }
+    return d;
+  }, [gamma]);
+
+  return (
+    <svg width={width} height={height} className={`transition-opacity duration-500 ${active ? 'opacity-100' : 'opacity-20'}`}>
+      <path d={pathData} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+};
+
+const MixingDeck: React.FC = () => {
+  const [activeHarmonics, setActiveHarmonics] = useState<boolean[]>(new Array(10).fill(false));
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const gammas = useMemo(() => RIEMANN_ZEROS.slice(0, 10), []);
   const xLimit = 60;
 
   const activeCount = activeHarmonics.filter(Boolean).length;
@@ -46,7 +71,6 @@ const MixingDeck: React.FC = () => {
         }
       }
       
-      // Normalization: Divide by sqrt(N) to keep amplitude manageable
       const normalizedSum = activeCount > 0 ? rawSum / Math.sqrt(activeCount) : 0;
       sumWave.push(normalizedSum);
     }
@@ -55,197 +79,261 @@ const MixingDeck: React.FC = () => {
   }, [activeHarmonics, gammas, xLimit, activeCount]);
 
   const toggleHarmonic = (idx: number) => {
+    if (!isUnlocked) return;
     const next = [...activeHarmonics];
     next[idx] = !next[idx];
     setActiveHarmonics(next);
   };
 
+  const steps: StoryStep[] = [
+    {
+      id: 'fundamental',
+      title: 'The Fundamental Tone (γ1)',
+      narrative: (
+        <p>
+          We start with the first zero (<b>14.13</b>). By itself, it is just a smooth, repetitive wave. 
+          It creates a gentle rhythm, but it's too broad to point at individual primes.
+        </p>
+      ),
+      action: () => {
+        const next = new Array(10).fill(false);
+        next[0] = true;
+        setActiveHarmonics(next);
+      }
+    },
+    {
+      id: 'interference',
+      title: 'The Interference (Adding γ2)',
+      narrative: (
+        <p>
+          Now we add the second zero (<b>21.02</b>). Watch what happens: In some places, the waves go up together 
+          (<span className="text-cyan-400 font-bold">Constructive</span>). 
+          In others, they cancel out (<span className="text-rose-400 font-bold">Destructive</span>).
+          The "Ghost Traces" show the individual components.
+        </p>
+      ),
+      action: () => {
+        const next = new Array(10).fill(false);
+        next[0] = true;
+        next[1] = true;
+        setActiveHarmonics(next);
+      }
+    },
+    {
+      id: 'pattern',
+      title: 'The Pattern Emerges (Top 5)',
+      narrative: (
+        <p>
+          As we layer more frequencies, the "Noise" between numbers starts to flatten out (Silence), 
+          and the "Spikes" at the prime numbers get louder. 
+          Notice how the Individual components are now hidden to focus on the <b>Summed Signal</b>.
+        </p>
+      ),
+      action: () => {
+        const next = new Array(10).fill(false);
+        for(let i=0; i<5; i++) next[i] = true;
+        setActiveHarmonics(next);
+      }
+    },
+    {
+      id: 'hd',
+      title: 'High Definition (All 10)',
+      narrative: (
+        <p>
+          With all 10 harmonics active, the prime spikes are sharp and distinct. 
+          The interference cancels the energy everywhere except at the primes. 
+          We have successfully filtered the <b>Signal</b> from the <b>Noise</b>.
+        </p>
+      ),
+      action: () => {
+        setActiveHarmonics(new Array(10).fill(true));
+      }
+    }
+  ];
+
   const resolutionText = useMemo(() => {
     if (activeCount === 0) return "🔇 Silence: Select at least one harmonic to begin.";
-    if (activeCount < 4) return "⚠️ Low Resolution: The 'Prime Spikes' are wide and blurry. It is hard to distinguish primes from noise.";
-    if (activeCount <= 8) return "⚡ Medium Resolution: Patterns are emerging. Interference is clearing the spaces between primes.";
-    return "✅ High Resolution: The waves are cancelling out the noise effectively. The 'Prime Spikes' are sharp and accurate.";
+    if (activeCount < 3) return "⚠️ Low Resolution: Ghost traces enabled. Components visible.";
+    if (activeCount <= 8) return "⚡ Medium Resolution: Patterns are emerging. Noise is clearing.";
+    return "✅ High Resolution: Prime spikes are sharp and accurate.";
   }, [activeCount]);
 
   return (
-    <div className="w-full h-full flex flex-col gap-4 overflow-hidden">
-      <header className="flex flex-col md:flex-row justify-between items-center bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-2xl gap-4">
-        <div>
-          <h2 className="text-xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">The Mixing Deck</h2>
-          <p className="text-xs text-slate-500 font-medium">Summing 10 harmonics to isolate the prime signal</p>
-        </div>
-        <div className="flex flex-col items-end">
-          <div className="flex gap-1.5 mb-1">
+    <StoryLayout
+      steps={steps}
+      isUnlocked={isUnlocked}
+      onExploreFreely={() => setIsUnlocked(true)}
+    >
+      <div className="w-full h-full flex flex-col gap-4 overflow-hidden">
+        {/* Top Stats Bar */}
+        <div className="flex flex-col md:flex-row justify-between items-center bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-2xl gap-4 shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-slate-950 rounded-lg flex items-center justify-center border border-slate-800 shadow-inner">
+               <svg className="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+               </svg>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-100">The Mixing Deck</h2>
+              <div className="flex items-center gap-2">
+                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded border uppercase ${activeCount > 8 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-400' : 'bg-amber-950/30 border-amber-500/30 text-amber-400'}`}>
+                  {resolutionText.split(':')[0]}
+                </span>
+                <p className="text-[10px] text-slate-500 font-medium">{resolutionText.split(': ')[1]}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex gap-1.5 p-2 bg-slate-950 rounded-lg border border-slate-800/50">
             {activeHarmonics.map((active, i) => (
               <div 
                 key={i} 
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                  active ? 'shadow-sm' : 'opacity-10 grayscale'
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  active ? 'shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'opacity-10 grayscale'
                 }`}
-                style={{ 
-                  backgroundColor: HARMONIC_COLORS[i], 
-                  boxShadow: active ? `0 0 8px ${HARMONIC_COLORS[i]}` : 'none' 
-                }}
+                style={{ backgroundColor: HARMONIC_COLORS[i] }}
               />
             ))}
           </div>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            {activeCount} / 10 Active
-          </span>
         </div>
-      </header>
 
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
-        {/* Left: Scrollable Harmonic Controls */}
-        <aside className="lg:w-72 flex flex-col bg-slate-900/40 rounded-xl border border-slate-800/50 overflow-hidden">
-          <div className="p-3 border-b border-slate-800 bg-slate-900/60">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Harmonic Selection</h3>
-          </div>
-          <div className="flex-1 overflow-y-auto p-2 custom-scrollbar space-y-2">
-            {gammas.map((gamma, i) => (
-              <div 
-                key={i} 
-                onClick={() => toggleHarmonic(i)}
-                className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all border ${
-                  activeHarmonics[i] 
-                    ? 'bg-slate-800/80 border-slate-700 shadow-md' 
-                    : 'bg-transparent border-transparent hover:bg-slate-800/40'
-                }`}
-              >
-                <div 
-                  className={`w-3 h-3 rounded-full shrink-0 transition-opacity ${!activeHarmonics[i] && 'opacity-30'}`}
-                  style={{ backgroundColor: HARMONIC_COLORS[i] }}
-                />
-                <div className="flex-1">
-                  <p className={`text-[11px] font-bold ${activeHarmonics[i] ? 'text-slate-100' : 'text-slate-500'}`}>
-                    Harmonic {i + 1}
-                  </p>
-                  <p className="text-[9px] font-mono text-slate-500">
-                    &gamma; &approx; {gamma.toFixed(2)}
-                  </p>
-                </div>
-                <div className={`w-8 h-4 rounded-full relative transition-colors ${activeHarmonics[i] ? 'bg-cyan-900/50' : 'bg-slate-800'}`}>
-                  <div 
-                    className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full transition-transform transform ${
-                      activeHarmonics[i] ? 'translate-x-4 bg-cyan-400' : 'translate-x-0 bg-slate-600'
-                    }`}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </aside>
-
-        {/* Right: Main Visualization Area */}
-        <div className="flex-1 flex flex-col gap-4 min-h-0">
-          {/* Educational Resolution Status */}
-          <div className={`p-3 rounded-lg border text-xs font-medium transition-colors ${
-            activeCount < 4 
-              ? 'bg-amber-900/10 border-amber-900/30 text-amber-200/70' 
-              : activeCount <= 8 
-              ? 'bg-blue-900/10 border-blue-900/30 text-blue-200/70'
-              : 'bg-emerald-900/10 border-emerald-900/30 text-emerald-200/70'
-          }`}>
-            {resolutionText}
-          </div>
-
-          <div className="flex-1 flex flex-col bg-slate-900 rounded-xl border-2 border-slate-800 overflow-hidden shadow-2xl relative">
-            <div className="absolute top-2 left-4 z-10 flex flex-col">
-              <span className="text-[10px] font-black tracking-widest uppercase text-white/50 mb-1">Normalized Wave Sum</span>
-              <div className="flex items-center gap-2">
-                <div className="h-0.5 w-4 bg-white" />
-                <span className="text-[9px] font-bold text-white/40 uppercase">y(x) = &Sigma; cos(&gamma; ln x) / &radic;N</span>
-              </div>
+        <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
+          {/* Left: Harmonic Selection with Sparklines */}
+          <aside className="lg:w-80 flex flex-col bg-slate-900/40 rounded-xl border border-slate-800/50 overflow-hidden">
+            <div className="p-3 border-b border-slate-800 bg-slate-900/60 flex justify-between items-center">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Harmonic Conductor</h3>
+              {isUnlocked && <span className="text-[9px] text-cyan-500 font-bold uppercase animate-pulse">Live</span>}
             </div>
+            <div className="flex-1 overflow-y-auto p-2 custom-scrollbar space-y-2">
+              {gammas.map((gamma, i) => (
+                <div 
+                  key={i} 
+                  onClick={() => toggleHarmonic(i)}
+                  className={`flex items-center gap-3 p-3 rounded-xl transition-all border group ${
+                    activeHarmonics[i] 
+                      ? 'bg-slate-800/80 border-slate-700 shadow-lg scale-[1.02]' 
+                      : 'bg-transparent border-transparent opacity-50 grayscale-[0.5] hover:opacity-100 hover:grayscale-0'
+                  } ${isUnlocked ? 'cursor-pointer' : 'cursor-default'}`}
+                >
+                  <div className="flex flex-col flex-1 gap-1">
+                    <div className="flex justify-between items-center">
+                      <span className={`text-[10px] font-black uppercase ${activeHarmonics[i] ? 'text-white' : 'text-slate-500'}`}>
+                        H-{i + 1}
+                      </span>
+                      <span className="text-[9px] font-mono text-slate-600">γ ≈ {gamma.toFixed(2)}</span>
+                    </div>
+                    <HarmonicSparkline gamma={gamma} color={HARMONIC_COLORS[i]} active={activeHarmonics[i]} />
+                  </div>
+                  
+                  {isUnlocked && (
+                    <div className={`w-8 h-4 rounded-full relative transition-colors shrink-0 ${activeHarmonics[i] ? 'bg-cyan-900/50' : 'bg-slate-800'}`}>
+                      <div className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full transition-transform transform ${
+                        activeHarmonics[i] ? 'translate-x-4 bg-cyan-400 shadow-[0_0_8px_#22d3ee]' : 'translate-x-0 bg-slate-600'
+                      }`} />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </aside>
 
-            <Plot
-              data={[
-                // Main sum wave
-                {
-                  x: data.xValues,
-                  y: data.sumWave,
-                  type: 'scatter',
-                  mode: 'lines',
-                  line: { color: '#ffffff', width: 2.5, shape: 'spline' },
-                  fill: 'tozeroy',
-                  fillcolor: 'rgba(255,255,255,0.03)',
-                  name: 'Summed Signal'
-                },
-                // Threshold Line
-                {
-                  x: [2, xLimit],
-                  y: [1.5, 1.5],
-                  type: 'scatter',
-                  mode: 'lines',
-                  line: { color: '#fb7185', dash: 'dash', width: 1.5 },
-                  name: 'Prediction Threshold',
-                  hoverinfo: 'skip'
-                }
-              ]}
-              layout={{
-                autosize: true,
-                margin: { l: 40, r: 20, b: 40, t: 40 },
-                paper_bgcolor: 'rgba(0,0,0,0)',
-                plot_bgcolor: 'rgba(0,0,0,0)',
-                xaxis: { 
-                    title: 'x (Number Line)', 
-                    color: '#64748b', 
-                    gridcolor: '#1e293b', 
-                    zeroline: false,
-                    range: [2, xLimit],
-                    tickfont: { size: 10 }
-                },
-                yaxis: { 
-                    title: 'Amplitude', 
-                    color: '#64748b', 
-                    gridcolor: '#1e293b', 
-                    range: [-4, 4],
-                    tickfont: { size: 10 }
-                },
-                showlegend: false,
-                annotations: [
-                  {
-                    x: 2,
-                    y: 1.65,
-                    xref: 'x',
-                    yref: 'y',
-                    text: 'Prediction Threshold (1.5)',
-                    showarrow: false,
-                    font: { color: '#fb7185', size: 9 },
-                    xanchor: 'left'
-                  },
-                  {
-                    x: 13,
-                    y: 2,
-                    xref: 'x',
-                    yref: 'y',
-                    text: 'Prime Detected',
-                    showarrow: true,
-                    arrowhead: 2,
-                    ax: 0,
-                    ay: -40,
-                    font: { color: '#22d3ee', size: 10 },
-                    visible: activeCount >= 3
-                  }
-                ]
-              }}
-              useResizeHandler={true}
-              className="w-full h-full"
-              config={{ responsive: true, displayModeBar: false }}
-            />
-          </div>
-          
-          <div className="bg-slate-950 p-3 rounded-lg border border-slate-900 flex items-start gap-3">
-             <div className="shrink-0 text-cyan-500 mt-1">
-               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          {/* Right: Main Plot with Ghost Traces */}
+          <div className="flex-1 bg-slate-900 rounded-2xl border-2 border-slate-800 overflow-hidden shadow-2xl relative flex flex-col min-h-0">
+             <div className="p-4 border-b border-slate-800 bg-slate-950/30 flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-3">
+                   <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Interference Pattern Sum</h3>
+                </div>
+                <div className="text-[10px] font-mono text-slate-500">Scale: log(x) mapping</div>
              </div>
-             <p className="text-[11px] text-slate-500 leading-tight">
-               <span className="font-bold text-slate-400">The Prediction Logic:</span> When enough harmonics align (constructive interference), the waveform crosses the threshold. These peaks correspond exactly to the positions of prime numbers. High-frequency harmonics (the ones lower in the list) "sharpen" these peaks.
-             </p>
+
+             <div className="flex-1 relative">
+                <Plot
+                  data={[
+                    // Ghost Traces (Individual Waves) - Only visible if activeCount < 3
+                    ...((activeCount > 0 && activeCount < 3) ? gammas.map((g, i) => {
+                      if (!activeHarmonics[i]) return null;
+                      return {
+                        x: data.xValues,
+                        y: data.individualWaves[i],
+                        type: 'scatter' as const,
+                        mode: 'lines' as const,
+                        name: `H-${i+1}`,
+                        line: { color: HARMONIC_COLORS[i], width: 1.5, dash: 'dash' as const },
+                        opacity: 0.4,
+                        hoverinfo: 'skip'
+                      };
+                    }).filter(Boolean) : []),
+                    
+                    // Main Sum Line
+                    {
+                      x: data.xValues,
+                      y: data.sumWave,
+                      type: 'scatter',
+                      mode: 'lines',
+                      name: 'Mixed Signal',
+                      line: { color: '#ffffff', width: 3, shape: 'spline' },
+                      fill: 'tozeroy',
+                      fillcolor: 'rgba(255,255,255,0.03)',
+                      hovertemplate: 'x: %{x:.2f}<br>Amplitude: %{y:.4f}<extra></extra>'
+                    },
+                    
+                    // Prediction Markers (only if enough harmonics active)
+                    ...(activeCount >= 5 ? [
+                      {
+                        x: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59],
+                        y: Array(17).fill(1.8),
+                        type: 'scatter',
+                        mode: 'markers',
+                        name: 'Primes',
+                        marker: { color: '#22d3ee', size: 6, symbol: 'triangle-down' },
+                        hoverinfo: 'name'
+                      }
+                    ] : [])
+                  ]}
+                  layout={{
+                    autosize: true,
+                    margin: { l: 50, r: 20, b: 50, t: 20 },
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: { 
+                        title: 'x (Number Line)', 
+                        color: '#64748b', 
+                        gridcolor: '#1e293b', 
+                        zeroline: false,
+                        range: [2, xLimit],
+                        tickfont: { size: 10 }
+                    },
+                    yaxis: { 
+                        title: 'Combined Amplitude', 
+                        color: '#64748b', 
+                        gridcolor: '#1e293b', 
+                        range: [-4, 4],
+                        tickfont: { size: 10 },
+                        zerolinecolor: '#334155'
+                    },
+                    showlegend: isUnlocked,
+                    legend: { font: { color: '#64748b', size: 9 }, x: 0, y: 1 },
+                    hovermode: 'x unified'
+                  }}
+                  useResizeHandler={true}
+                  className="w-full h-full"
+                  config={{ responsive: true, displayModeBar: false }}
+                />
+
+                {/* Legend Toggle Info Overlay */}
+                {!isUnlocked && activeCount < 3 && (
+                   <div className="absolute top-6 right-6 bg-slate-950/80 p-3 rounded-lg border border-indigo-500/30 max-w-[160px] pointer-events-none animate-in fade-in slide-in-from-right-4 duration-500">
+                     <p className="text-[10px] text-indigo-300 leading-tight">
+                       <span className="font-bold">Visualizing Components:</span> Showing dashed lines for individual frequencies to illustrate interference.
+                     </p>
+                   </div>
+                )}
+             </div>
           </div>
         </div>
       </div>
-    </div>
+    </StoryLayout>
   );
 };
 
