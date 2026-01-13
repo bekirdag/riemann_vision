@@ -22,8 +22,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
   
   // Plotly camera state
   const [camera, setCamera] = useState<Camera>({
-    eye: { x: 2.0, y: 2.0, z: 2.0 },
-    center: { x: 0, y: 0, z: 0 },
+    eye: { x: 2.2, y: 2.2, z: 2.2 },
+    center: { x: 0, y: 10, z: 0 },
     up: { x: 0, y: 0, z: 1 }
   });
 
@@ -84,8 +84,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('terrain');
         setCamera({
-          eye: { x: 2.0, y: 2.0, z: 2.0 },
-          center: { x: 0, y: 0, z: 0 },
+          eye: { x: 2.2, y: 2.2, z: 2.2 },
+          center: { x: 0, y: 10, z: 0 },
           up: { x: 0, y: 0, z: 1 }
         });
       }
@@ -103,8 +103,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('pole');
         setCamera({
-          eye: { x: 1.0, y: -0.8, z: 1.5 },
-          center: { x: 0.5, y: 0.2, z: 0 },
+          eye: { x: 0.5, y: -1.5, z: 1.5 },
+          center: { x: 1, y: 0, z: 0 },
           up: { x: 0, y: 0, z: 1 }
         });
       }
@@ -122,8 +122,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('valley');
         setCamera({
-          eye: { x: 0.0, y: -1.8, z: 0.6 },
-          center: { x: 0.5, y: 5, z: 0 },
+          eye: { x: 3.5, y: 0, z: 0.5 },
+          center: { x: 0.5, y: 15, z: 0 },
           up: { x: 0, y: 0, z: 1 }
         });
       }
@@ -141,7 +141,7 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('zeros');
         setCamera({
-          eye: { x: 0.4, y: -0.8, z: 0.4 },
+          eye: { x: 1.5, y: 14.13, z: 2.0 },
           center: { x: 0.5, y: 14.13, z: 0 },
           up: { x: 0, y: 0, z: 1 }
         });
