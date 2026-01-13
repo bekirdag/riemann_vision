@@ -12,20 +12,22 @@ import DerivativeLink from './components/DerivativeLink';
 import IntroMystery from './components/IntroMystery';
 import EulerGoldenKey from './components/EulerGoldenKey';
 import RiemannTwist from './components/RiemannTwist';
+import HypothesisStatement from './components/HypothesisStatement';
 
 const VIEW_SEQUENCE = [
   { mode: ViewMode.INTRO_MYSTERY, label: "0. The Great Mystery", color: "bg-slate-700" },
   { mode: ViewMode.EULER_GOLDEN_KEY, label: "1. Euler's Golden Key", color: "bg-amber-600" },
   { mode: ViewMode.RIEMANN_TWIST, label: "2. Riemann's Twist", color: "bg-indigo-600" },
   { mode: ViewMode.CONCEPT_MAP, label: "3. The Concept Map", color: "bg-cyan-600" },
-  { mode: ViewMode.LANDSCAPE_3D, label: "4. The Landscape", color: "bg-cyan-600" },
-  { mode: ViewMode.ZERO_HUNTER, label: "5. The Zero Hunter", color: "bg-cyan-600" },
+  { mode: ViewMode.HYPOTHESIS_STATEMENT, label: "4. The Hypothesis", color: "bg-cyan-600" },
+  { mode: ViewMode.LANDSCAPE_3D, label: "5. The Landscape", color: "bg-cyan-600" },
+  { mode: ViewMode.ZERO_HUNTER, label: "6. The Zero Hunter", color: "bg-cyan-600" },
   { mode: null, label: "DIVIDER" }, // Divider marker
-  { mode: ViewMode.ATOMIC_WAVE, label: "6. The Atomic Wave", color: "bg-amber-600" },
-  { mode: ViewMode.MIXING_DECK, label: "7. The Mixing Deck", color: "bg-indigo-600" },
-  { mode: ViewMode.HARMONIC_SYNTHESIS, label: "8. Harmonic Synthesis", color: "bg-rose-600" },
-  { mode: ViewMode.DERIVATIVE_LINK, label: "9. The Derivative Link", color: "bg-emerald-600" },
-  { mode: ViewMode.PRIME_STAIRCASE, label: "10. Prime Verification", color: "bg-cyan-600" },
+  { mode: ViewMode.ATOMIC_WAVE, label: "7. The Atomic Wave", color: "bg-amber-600" },
+  { mode: ViewMode.MIXING_DECK, label: "8. The Mixing Deck", color: "bg-indigo-600" },
+  { mode: ViewMode.HARMONIC_SYNTHESIS, label: "9. Harmonic Synthesis", color: "bg-rose-600" },
+  { mode: ViewMode.DERIVATIVE_LINK, label: "10. The Derivative Link", color: "bg-emerald-600" },
+  { mode: ViewMode.PRIME_STAIRCASE, label: "11. Prime Verification", color: "bg-cyan-600" },
 ];
 
 const App: React.FC = () => {
@@ -147,6 +149,7 @@ const App: React.FC = () => {
                 </section>
               </>
             ) : viewMode !== ViewMode.CONCEPT_MAP && 
+                viewMode !== ViewMode.HYPOTHESIS_STATEMENT && 
                 viewMode !== ViewMode.MIXING_DECK && 
                 viewMode !== ViewMode.HARMONIC_SYNTHESIS &&
                 viewMode !== ViewMode.ATOMIC_WAVE &&
@@ -204,6 +207,7 @@ const App: React.FC = () => {
                   {viewMode === ViewMode.EULER_GOLDEN_KEY && "Euler discovered that studying integers is identical to studying primes."}
                   {viewMode === ViewMode.RIEMANN_TWIST && "Moving from 1D to 2D. How imaginary powers turn numbers into spirals."}
                   {viewMode === ViewMode.CONCEPT_MAP && "A spatial overview of the complex plane and the locations of the zeros."}
+                  {viewMode === ViewMode.HYPOTHESIS_STATEMENT && "The million-dollar question: Are all non-trivial zeros on the line?"}
                   {viewMode === ViewMode.ATOMIC_WAVE && "Watch how a single zero creates a vibrational frequency in log-space."}
                   {viewMode === ViewMode.MIXING_DECK && "Combining harmonics to isolate prime signals through interference."}
                   {viewMode === ViewMode.HARMONIC_SYNTHESIS && "Riemann's formula: using zeros to reconstruct the staircase."}
@@ -227,6 +231,8 @@ const App: React.FC = () => {
               ? "The Twist: Imaginary numbers add rotation, turning lines into wave-like spirals."
               : viewMode === ViewMode.CONCEPT_MAP
               ? "All non-trivial zeros are conjectured to lie exactly on the line Re(s) = 0.5."
+              : viewMode === ViewMode.HYPOTHESIS_STATEMENT
+              ? "Riemann hypothesized that every zero found in this strip must be exactly on the 0.5 center line."
               : viewMode === ViewMode.MIXING_DECK
               ? "Interference hotspots align perfectly with primes when zeros are included."
               : viewMode === ViewMode.HARMONIC_SYNTHESIS
@@ -248,6 +254,7 @@ const App: React.FC = () => {
           {viewMode === ViewMode.EULER_GOLDEN_KEY && <EulerGoldenKey />}
           {viewMode === ViewMode.RIEMANN_TWIST && <RiemannTwist />}
           {viewMode === ViewMode.CONCEPT_MAP && <ConceptMap />}
+          {viewMode === ViewMode.HYPOTHESIS_STATEMENT && <HypothesisStatement />}
           {viewMode === ViewMode.DERIVATIVE_LINK && <DerivativeLink />}
           {viewMode === ViewMode.ZERO_HUNTER && <ZeroHunter tStart={tStart} tEnd={tEnd} iterations={iterations} />}
           {viewMode === ViewMode.MIXING_DECK && <MixingDeck />}
