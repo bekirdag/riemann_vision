@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import Plot from 'react-plotly.js';
 import { RIEMANN_ZEROS } from '../services/mathUtils';
 import StoryLayout, { StoryStep } from './StoryLayout';
@@ -49,7 +49,8 @@ const MixingDeck: React.FC = () => {
   const activeCount = activeHarmonics.filter(Boolean).length;
 
   const data = useMemo(() => {
-    const steps = 800; // High resolution for precise alignment
+    // Increased resolution to 1200 steps for better peak alignment precision
+    const steps = 1200; 
     const xValues: number[] = [];
     const individualWaves: number[][] = Array.from({ length: 10 }, () => []);
     const sumWave: number[] = [];
@@ -59,14 +60,13 @@ const MixingDeck: React.FC = () => {
     const stepSize = (endX - startX) / steps;
 
     for (let i = 0; i <= steps; i++) {
-      // CRITICAL FIX: The current x-coordinate is explicitly derived from the iterator.
-      // We use this exact same value for both the plot axis and the log calculation.
+      // Explicit X-value generation to prevent index-based shifting errors
       const x = startX + i * stepSize;
       xValues.push(x);
       
       let rawSum = 0;
       for (let gIdx = 0; gIdx < gammas.length; gIdx++) {
-        // Calculation and coordinate are strictly 1:1 linked
+        // Core prime-detection wave: cos(gamma * ln(x))
         const val = Math.cos(gammas[gIdx] * Math.log(x));
         individualWaves[gIdx].push(val);
         if (activeHarmonics[gIdx]) {
@@ -74,6 +74,7 @@ const MixingDeck: React.FC = () => {
         }
       }
       
+      // Normalize sum to prevent vertical blow-up
       const normalizedSum = activeCount > 0 ? rawSum / Math.sqrt(activeCount) : 0;
       sumWave.push(normalizedSum);
     }
@@ -112,7 +113,6 @@ const MixingDeck: React.FC = () => {
           Now we add the second zero (<b>21.02</b>). Watch what happens: In some places, the waves go up together 
           (<span className="text-cyan-400 font-bold">Constructive</span>). 
           In others, they cancel out (<span className="text-rose-400 font-bold">Destructive</span>).
-          The "Ghost Traces" show the individual components.
         </p>
       ),
       action: () => {
@@ -129,7 +129,6 @@ const MixingDeck: React.FC = () => {
         <p>
           As we layer more frequencies, the "Noise" between numbers starts to flatten out (Silence), 
           and the "Spikes" at the prime numbers get louder. 
-          Notice how the Individual components are now hidden to focus on the <b>Summed Signal</b>.
         </p>
       ),
       action: () => {
@@ -145,7 +144,6 @@ const MixingDeck: React.FC = () => {
         <p>
           With all 10 harmonics active, the prime spikes are sharp and distinct. 
           The interference cancels the energy everywhere except at the primes. 
-          We have successfully filtered the <b>Signal</b> from the <b>Noise</b>.
         </p>
       ),
       action: () => {
@@ -205,7 +203,8 @@ const MixingDeck: React.FC = () => {
               <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Harmonic Conductor</h3>
               {isUnlocked && <span className="text-[9px] text-cyan-500 font-bold uppercase animate-pulse">Live</span>}
             </div>
-            <div className="flex-1 overflow-y-auto p-2 custom-scrollbar space-y-2">
+            {/* Fix 3: Added pb-10 to prevent clipping of the last harmonic item */}
+            <div className="flex-1 overflow-y-auto p-2 pb-10 custom-scrollbar space-y-2">
               {gammas.map((gamma, i) => (
                 <div 
                   key={i} 
@@ -278,6 +277,7 @@ const MixingDeck: React.FC = () => {
                     
                     ...(activeCount >= 5 ? [
                       {
+                        // Fix 2: Prime markers remain exactly at the primes
                         x: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59],
                         y: Array(17).fill(1.8),
                         type: 'scatter',
@@ -293,6 +293,13 @@ const MixingDeck: React.FC = () => {
                     margin: { l: 50, r: 20, b: 50, t: 20 },
                     paper_bgcolor: 'rgba(0,0,0,0)',
                     plot_bgcolor: 'rgba(0,0,0,0)',
+                    // Fix 1: High Contrast Tooltip
+                    hoverlabel: {
+                      bgcolor: '#0f172a',
+                      bordercolor: '#334155',
+                      font: { color: '#f8fafc', size: 12, family: 'monospace' },
+                      align: 'left'
+                    },
                     xaxis: { 
                         title: 'x (Number Line)', 
                         color: '#64748b', 
