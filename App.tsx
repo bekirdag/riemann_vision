@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { ViewMode } from './types';
 import ZeroHunter from './components/ZeroHunter';
 import Landscape3D from './components/Landscape3D';
-import PrimeStaircase from './components/PrimeStaircase';
+import ErrorTerm from './components/ErrorTerm';
 import ConceptMap from './components/ConceptMap';
 import HarmonicSynthesis from './components/HarmonicSynthesis';
 import AtomicWave from './components/AtomicWave';
@@ -33,19 +33,14 @@ const VIEW_SEQUENCE = [
   { mode: ViewMode.MIXING_DECK, label: "8. The Mixing Deck", color: "bg-indigo-600", act: "Act IV: The Connection" },
   { mode: ViewMode.DERIVATIVE_LINK, label: "9. The Derivative Link", color: "bg-emerald-600", act: "Act IV: The Connection" },
   { mode: ViewMode.HARMONIC_SYNTHESIS, label: "10. Harmonic Synthesis", color: "bg-rose-600", act: "Act IV: The Connection" },
-  { mode: ViewMode.PRIME_STAIRCASE, label: "11. Prime Verification", color: "bg-cyan-600", act: "Act IV: The Connection" },
+  { mode: ViewMode.ERROR_TERM, label: "11. The Error Term (Finale)", color: "bg-cyan-600", act: "Act IV: The Connection" },
 ];
 
 const App: React.FC = () => {
   const [tStart, setTStart] = useState<number>(0);
   const [tEnd, setTEnd] = useState<number>(30);
   const [iterations, setIterations] = useState<number>(150);
-  const [xMax, setXMax] = useState<number>(100);
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.INTRO_MYSTERY);
-  
-  const [formulaInput, setFormulaInput] = useState<string>("x / (log(x) - 1.08366)");
-  const [plottedFormula, setPlottedFormula] = useState<string>("x / (log(x) - 1.08366)");
-  const [formulaError, setFormulaError] = useState<string | null>(null);
 
   const handleTStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseFloat(e.target.value);
@@ -59,11 +54,6 @@ const App: React.FC = () => {
     if (val <= tStart) setTStart(Math.max(0, val - 10));
   };
 
-  const handlePlotFormula = () => {
-    setPlottedFormula(formulaInput);
-    setFormulaError(null);
-  };
-
   const currentStepIndex = VIEW_SEQUENCE.findIndex(v => v.mode === viewMode);
   const nextStep = VIEW_SEQUENCE[currentStepIndex + 1];
 
@@ -73,12 +63,10 @@ const App: React.FC = () => {
     }
   };
 
-  // Grouped steps for sidebar
   const acts = ["Act I: The Mystery", "Act II: The Machine", "Act III: The Landscape", "Act IV: The Connection"];
 
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-slate-950 text-slate-100 font-sans">
-      {/* Sidebar Controls */}
       <aside className="w-full md:w-80 p-6 flex flex-col gap-6 bg-slate-900 border-r border-slate-800 shadow-xl z-10 shrink-0 overflow-y-auto custom-scrollbar">
         <header>
           <div className="flex items-center gap-2">
@@ -116,7 +104,6 @@ const App: React.FC = () => {
             </section>
           ))}
 
-          {/* Contextual Settings */}
           <div className="pt-4 border-t border-slate-800 space-y-6">
             {(viewMode === ViewMode.ZERO_HUNTER || viewMode === ViewMode.LANDSCAPE_3D) && (
               <>
@@ -165,44 +152,9 @@ const App: React.FC = () => {
                 </section>
               </>
             )}
-
-            {viewMode === ViewMode.PRIME_STAIRCASE && (
-              <section className="space-y-4">
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] font-mono text-slate-400">
-                    <span className="uppercase font-black tracking-widest text-slate-600">Range (X)</span>
-                    <span className="text-cyan-400">{xMax}</span>
-                  </div>
-                  <input
-                    type="range" min="10" max="2000" step="10"
-                    value={xMax} onChange={(e) => setXMax(parseInt(e.target.value))}
-                    className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">
-                    Custom Formula
-                  </label>
-                  <div className="flex gap-1">
-                    <input
-                      type="text" value={formulaInput} onChange={(e) => setFormulaInput(e.target.value)}
-                      placeholder="e.g. x/log(x)"
-                      className="flex-1 bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-[11px] font-mono focus:ring-1 focus:ring-cyan-500 outline-none"
-                    />
-                    <button
-                      onClick={handlePlotFormula}
-                      className="bg-cyan-600 hover:bg-cyan-500 text-white text-[9px] px-2 py-1 rounded font-bold uppercase"
-                    >
-                      Plot
-                    </button>
-                  </div>
-                </div>
-              </section>
-            )}
           </div>
         </div>
 
-        {/* Info Box */}
         <div className="mt-auto pt-6 border-t border-slate-800">
           <div className="p-3 bg-slate-950/50 rounded-lg border border-slate-800">
             <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Status</h4>
@@ -218,13 +170,12 @@ const App: React.FC = () => {
               {viewMode === ViewMode.MIXING_DECK && "Simulating wave interference for prime detection."}
               {viewMode === ViewMode.HARMONIC_SYNTHESIS && "Summing zeros to approximate the step function."}
               {viewMode === ViewMode.DERIVATIVE_LINK && "Analyzing the pulse-density relationship."}
-              {viewMode === ViewMode.PRIME_STAIRCASE && "Verifying theoretical results against reality."}
+              {viewMode === ViewMode.ERROR_TERM && "Visualizing the predicted noise correction."}
             </p>
           </div>
         </div>
       </aside>
 
-      {/* Main Visualization Canvas */}
       <main className="flex-1 flex flex-col relative min-w-0">
         <div className="flex-1 p-4 md:p-8 overflow-hidden flex flex-col">
           <div className="w-full h-full relative flex-1">
@@ -237,19 +188,12 @@ const App: React.FC = () => {
             {viewMode === ViewMode.ZERO_HUNTER && <ZeroHunter tStart={tStart} tEnd={tEnd} iterations={iterations} />}
             {viewMode === ViewMode.MIXING_DECK && <MixingDeck />}
             {viewMode === ViewMode.LANDSCAPE_3D && <Landscape3D tStart={tStart} tEnd={tEnd} iterations={iterations} />}
-            {viewMode === ViewMode.PRIME_STAIRCASE && (
-              <PrimeStaircase 
-                xMax={xMax} 
-                customFormula={plottedFormula} 
-                onFormulaError={setFormulaError}
-              />
-            )}
+            {viewMode === ViewMode.ERROR_TERM && <ErrorTerm />}
             {viewMode === ViewMode.HARMONIC_SYNTHESIS && <HarmonicSynthesis />}
             {viewMode === ViewMode.ATOMIC_WAVE && <AtomicWave />}
           </div>
         </div>
 
-        {/* Footer Navigation */}
         {nextStep && (
           <footer className="p-4 bg-slate-900/60 border-t border-slate-800 backdrop-blur-sm flex justify-between items-center px-8">
             <div className="hidden md:block">

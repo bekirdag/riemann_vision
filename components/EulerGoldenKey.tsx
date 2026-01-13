@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { sieveOfEratosthenes } from '../services/mathUtils';
+import { sieveOfEratosthenes, getUniquePrimeFactors, isPrimeNumber } from '../services/mathUtils';
 
 const PRIMES = (() => {
   const isPrime = sieveOfEratosthenes(500);
@@ -12,6 +12,7 @@ const PRIMES = (() => {
 const EulerGoldenKey: React.FC = () => {
   const [s, setS] = useState<number>(2.0);
   const [numTerms, setNumTerms] = useState<number>(100);
+  const [hoveredN, setHoveredN] = useState<number | null>(null);
 
   const results = useMemo(() => {
     // 1. Partial Sum of Integers (1/n^s)
@@ -20,23 +21,21 @@ const EulerGoldenKey: React.FC = () => {
     for (let n = 1; n <= numTerms; n++) {
       const term = Math.pow(n, -s);
       sum += term;
-      if (n <= 5) sumTerms.push({ n, val: term });
+      if (n <= 50) sumTerms.push({ n, val: term });
     }
 
     // 2. Partial Product of Primes 1 / (1 - p^-s)
     let product = 1;
     const productTerms: { p: number; val: number }[] = [];
-    // Use enough primes to match the precision of numTerms roughly
-    const activePrimes = PRIMES.slice(0, Math.floor(numTerms / 2));
+    const activePrimesCount = Math.floor(numTerms / 1.5);
+    const activePrimes = PRIMES.slice(0, activePrimesCount);
     for (let i = 0; i < activePrimes.length; i++) {
       const p = activePrimes[i];
       const factor = 1 / (1 - Math.pow(p, -s));
       product *= factor;
-      if (i <= 4) productTerms.push({ p, val: factor });
+      if (i <= 50) productTerms.push({ p, val: factor });
     }
 
-    // Theoretical Limit (Only for special cases or if we want to show a benchmark)
-    // zeta(2) = pi^2 / 6
     const benchmark = s === 2 ? (Math.PI * Math.PI) / 6 : null;
 
     return { sum, product, sumTerms, productTerms, benchmark };
@@ -44,6 +43,14 @@ const EulerGoldenKey: React.FC = () => {
 
   const diff = Math.abs(results.sum - results.product);
   const tilt = Math.min(30, Math.max(-30, (results.sum - results.product) * 20));
+
+  const hoveredPrimeFactors = useMemo(() => {
+    if (hoveredN === null) return [];
+    return getUniquePrimeFactors(hoveredN);
+  }, [hoveredN]);
+
+  // Determine if convergence is "good" enough for coloring
+  const isConverged = numTerms >= 450 || diff < 0.0001;
 
   return (
     <div className="w-full h-full flex flex-col gap-6 overflow-hidden">
@@ -57,8 +64,12 @@ const EulerGoldenKey: React.FC = () => {
             </p>
           </div>
           
-          <div className="mt-6 p-4 bg-slate-950 rounded-xl border border-slate-800 flex justify-center">
-            <code className="text-lg md:text-xl font-mono text-amber-200">
+          <div className="mt-6 p-6 bg-slate-950 rounded-xl border border-slate-800 flex justify-center shadow-inner relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <code 
+              className="text-xl md:text-3xl select-none"
+              style={{ fontFamily: "'Times New Roman', serif", fontStyle: "italic", color: '#fbbf24' }}
+            >
               &sum; n<sup>-s</sup> = &prod; (1 - p<sup>-s</sup>)<sup>-1</sup>
             </code>
           </div>
@@ -94,14 +105,14 @@ const EulerGoldenKey: React.FC = () => {
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
         {/* The Balance Visual */}
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 relative flex flex-col items-center justify-center p-8 overflow-hidden">
+        <div className="bg-slate-900 rounded-2xl border border-slate-800 relative flex flex-col items-center justify-center p-8 overflow-hidden shadow-2xl">
            <div className="absolute inset-0 opacity-5 pointer-events-none flex items-center justify-center">
               <span className="text-[20rem] font-bold text-white">s</span>
            </div>
 
            {/* The Scale Beam */}
            <div 
-             className="w-full h-4 bg-slate-800 rounded-full relative transition-transform duration-500 ease-out"
+             className="w-full h-4 bg-slate-800 rounded-full relative transition-transform duration-700 ease-out"
              style={{ transform: `rotate(${tilt}deg)` }}
            >
               {/* Left Pan */}
@@ -124,64 +135,120 @@ const EulerGoldenKey: React.FC = () => {
            </div>
 
            {/* Fulcrum */}
-           <div className="w-12 h-12 bg-amber-600 rounded-lg transform rotate-45 -mt-6 z-10 border-4 border-slate-900" />
+           <div className="w-12 h-12 bg-amber-600 rounded-lg transform rotate-45 -mt-6 z-10 border-4 border-slate-900 shadow-xl" />
            
            <div className="mt-20 text-center">
-              <h3 className={`text-sm font-bold uppercase tracking-widest transition-colors ${diff < 0.001 ? 'text-emerald-400' : 'text-slate-500'}`}>
-                {diff < 0.00001 ? "Perfectly Balanced" : diff < 0.01 ? "Converging..." : "Out of Sync"}
+              <h3 className={`text-sm font-bold uppercase tracking-widest transition-colors duration-500 ${isConverged ? 'text-emerald-400' : 'text-slate-500'}`}>
+                {isConverged ? "Convergence Achieved" : diff < 0.01 ? "Converging..." : "Out of Sync"}
               </h3>
-              <p className="text-[10px] text-slate-500 mt-1">Difference: {diff.toExponential(4)}</p>
+              <p className={`text-[10px] mt-1 font-mono transition-colors ${isConverged ? 'text-emerald-500/70' : 'text-slate-500'}`}>
+                Difference: {diff.toExponential(4)}
+              </p>
            </div>
 
            {results.benchmark && (
-             <div className="absolute bottom-6 right-6 bg-emerald-900/20 border border-emerald-500/20 p-3 rounded-lg">
+             <div className="absolute bottom-6 right-6 bg-emerald-900/20 border border-emerald-500/20 p-3 rounded-lg backdrop-blur-sm animate-in fade-in slide-in-from-bottom-2">
                 <p className="text-[10px] font-bold text-emerald-500 uppercase">Basel Problem Result</p>
                 <p className="text-xs text-emerald-200 font-mono">&zeta;(2) = &pi;&sup2;/6 &approx; 1.644934</p>
              </div>
            )}
         </div>
 
-        {/* Breakdown Panel */}
-        <div className="grid grid-rows-2 gap-4">
+        {/* Breakdown Panel Column */}
+        <div className="grid grid-rows-[1fr,1fr] gap-4 min-h-0">
            {/* Summation Logic */}
-           <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 flex flex-col overflow-hidden">
-              <div className="flex justify-between items-center mb-4">
-                 <h4 className="text-xs font-bold text-slate-400 uppercase">Integers Side (The Series)</h4>
+           <div className="bg-slate-900/50 rounded-2xl border border-slate-800 flex flex-col overflow-hidden relative group">
+              <div className="p-4 border-b border-slate-800 bg-slate-900/60 flex justify-between items-center shrink-0">
+                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Integers Side (The Series)</h4>
                  <span className="text-[10px] font-mono text-slate-500">n = 1 &rarr; {numTerms}</span>
               </div>
-              <div className="flex-1 space-y-2 overflow-y-auto custom-scrollbar">
-                 {results.sumTerms.map(t => (
-                    <div key={t.n} className="flex justify-between items-center bg-slate-950 px-3 py-2 rounded border border-slate-800/50">
-                       <span className="text-[11px] font-mono text-slate-400">1 / {t.n}<sup>{s.toFixed(1)}</sup></span>
-                       <span className="text-[11px] font-mono text-white">+{t.val.toFixed(6)}</span>
+              <div className="flex-1 space-y-2 overflow-y-auto custom-scrollbar p-6">
+                 {results.sumTerms.slice(0, 10).map(t => (
+                    <div 
+                      key={t.n} 
+                      onMouseEnter={() => setHoveredN(t.n)}
+                      onMouseLeave={() => setHoveredN(null)}
+                      className={`flex justify-between items-center bg-slate-950 px-3 py-2 rounded border transition-all duration-200 cursor-help ${
+                        hoveredN === t.n ? 'border-amber-500/50 bg-slate-900 ring-2 ring-amber-500/10' : 'border-slate-800/50'
+                      }`}
+                    >
+                       <div className="flex items-center gap-2">
+                         <span className="text-[11px] font-mono text-slate-400">1 / {t.n}<sup>{s.toFixed(1)}</sup></span>
+                         {hoveredN === t.n && !isPrimeNumber(t.n) && t.n > 1 && (
+                           <span className="text-[9px] bg-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded uppercase font-bold tracking-tighter animate-in fade-in zoom-in-95">
+                             {t.n} = {getUniquePrimeFactors(t.n).join(' × ')}
+                           </span>
+                         )}
+                       </div>
+                       <span className={`text-[11px] font-mono ${hoveredN === t.n ? 'text-amber-400' : 'text-white'}`}>+{t.val.toFixed(6)}</span>
                     </div>
                  ))}
-                 <div className="text-center py-2 text-slate-700 font-bold">... + {numTerms - 5} more terms</div>
+                 <div className="text-center py-4 text-slate-700 font-bold text-[10px] uppercase tracking-widest">
+                    {numTerms > 10 ? `... + ${numTerms - 10} remaining terms` : 'End of series'}
+                 </div>
               </div>
            </div>
 
-           {/* Product Logic */}
-           <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 flex flex-col overflow-hidden">
-              <div className="flex justify-between items-center mb-4">
-                 <h4 className="text-xs font-bold text-slate-400 uppercase">Primes Side (The Product)</h4>
-                 <span className="text-[10px] font-mono text-slate-500">{Math.floor(numTerms/2)} Primes</span>
+           {/* Product Logic Panel with Footer */}
+           <div className="bg-slate-900/50 rounded-2xl border border-slate-800 flex flex-col overflow-hidden relative">
+              <div className="p-4 border-b border-slate-800 bg-slate-900/60 flex justify-between items-center shrink-0">
+                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Primes Side (The Product)</h4>
+                 <span className="text-[10px] font-mono text-slate-500">First {results.productTerms.length} Primes</span>
               </div>
-              <div className="flex-1 space-y-2 overflow-y-auto custom-scrollbar">
-                 {results.productTerms.map(t => (
-                    <div key={t.p} className="flex justify-between items-center bg-slate-950 px-3 py-2 rounded border border-slate-800/50">
-                       <span className="text-[11px] font-mono text-slate-400">1 / (1 - {t.p}<sup>-{s.toFixed(1)}</sup>)</span>
-                       <span className="text-[11px] font-mono text-amber-500">&times; {t.val.toFixed(6)}</span>
-                    </div>
-                 ))}
-                 <div className="text-center py-2 text-slate-700 font-bold">... multiplied by remaining primes</div>
+              
+              <div className="flex-1 space-y-2 overflow-y-auto custom-scrollbar p-6">
+                 {results.productTerms.slice(0, 10).map(t => {
+                    const isActiveFactor = hoveredPrimeFactors.includes(t.p);
+                    return (
+                      <div 
+                        key={t.p} 
+                        className={`flex justify-between items-center px-3 py-2 rounded border transition-all duration-300 ${
+                          isActiveFactor 
+                            ? 'bg-amber-500/10 border-amber-500/40 shadow-[0_0_10px_rgba(251,191,36,0.1)] scale-[1.02]' 
+                            : 'bg-slate-950 border-slate-800/50'
+                        }`}
+                      >
+                         <div className="flex items-center gap-3">
+                           <span className={`text-[11px] font-mono transition-colors ${isActiveFactor ? 'text-amber-400' : 'text-slate-400'}`}>
+                             1 / (1 - {t.p}<sup>-{s.toFixed(1)}</sup>)
+                           </span>
+                           {isActiveFactor && (
+                             <div className="flex items-center gap-1 animate-in fade-in slide-in-from-left-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                <span className="text-[9px] text-amber-500 font-black uppercase">Factor of {hoveredN}</span>
+                             </div>
+                           )}
+                         </div>
+                         <span className={`text-[11px] font-mono transition-colors ${isActiveFactor ? 'text-amber-300 font-bold' : 'text-amber-500'}`}>
+                            &times; {t.val.toFixed(6)}
+                         </span>
+                      </div>
+                    );
+                 })}
+                 <div className="text-center py-4 text-slate-700 font-bold text-[10px] uppercase tracking-widest">
+                    ... multiplied by remaining primes
+                 </div>
+              </div>
+
+              {/* Fixed Footer for the Breakdown Panel */}
+              <div className="shrink-0 bg-slate-950 p-4 border-t border-slate-800 relative z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+                 <p className="text-[10px] text-slate-500 text-center leading-relaxed italic">
+                   "Before Riemann moved into the complex plane, Euler used this formula to show that the <b>Zeta Function</b> is essentially a portrait of the prime numbers themselves."
+                 </p>
               </div>
            </div>
         </div>
       </div>
 
-      <div className="bg-amber-900/10 border border-amber-500/10 p-4 rounded-xl">
-         <p className="text-xs text-slate-500 text-center leading-relaxed">
-           "Before Riemann moved into the complex plane, Euler used this formula to show that the <b>Zeta Function</b> is essentially a portrait of the prime numbers themselves. If you want to understand the distribution of primes, you must master this function."
+      {/* Bottom Hint */}
+      <div className="bg-amber-900/10 border border-amber-500/10 p-4 rounded-xl flex items-center justify-center gap-3">
+         <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+            <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+         </div>
+         <p className="text-xs text-slate-400">
+           <b>Discovery:</b> Every number on the left is built from the prime factors on the right. Hover over <b>4</b> or <b>6</b> in the left list to see their components light up!
          </p>
       </div>
     </div>

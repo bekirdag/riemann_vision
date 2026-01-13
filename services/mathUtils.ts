@@ -70,6 +70,24 @@ export function calculateZeta(s: Complex, iterations: number): Complex {
 }
 
 /**
+ * Logarithmic Integral Li(x) approximation via numerical integration
+ */
+export function logIntegral(x: number): number {
+  if (x <= 1.5) return 0;
+  const steps = 500;
+  const h = (x - 2) / steps;
+  let sum = 0;
+  for (let i = 0; i <= steps; i++) {
+    const t = 2 + i * h;
+    const val = 1 / Math.log(t);
+    if (i === 0 || i === steps) sum += val / 2;
+    else sum += val;
+  }
+  // Li(x) = li(x) - li(2). Offset to start from 2 like Gauss's original conjecture.
+  return sum * h;
+}
+
+/**
  * Prime Number Sieve and Counting Functions
  */
 export function sieveOfEratosthenes(max: number): boolean[] {
@@ -88,19 +106,15 @@ export function calculatePrimeData(max: number) {
   const isPrime = sieveOfEratosthenes(max);
   const xValues: number[] = [];
   const piX: number[] = [];
-  const gaussApprox: number[] = [];
   
   let count = 0;
   for (let x = 1; x <= max; x++) {
     if (isPrime[x]) count++;
     xValues.push(x);
     piX.push(count);
-    
-    const approx = x > 1 ? x / Math.log(x) : 0;
-    gaussApprox.push(approx);
   }
   
-  return { xValues, piX, gaussApprox, isPrime };
+  return { xValues, piX, isPrime };
 }
 
 /**
@@ -120,9 +134,51 @@ export const RIEMANN_ZEROS = [
 ];
 
 /**
+ * Calculates the actual error (pi(x) - Li(x)) and Riemann's approximation
+ */
+export function calculateErrorData(max: number, numZeros: number) {
+  const { xValues, piX } = calculatePrimeData(max);
+  const liValues: number[] = [];
+  const actualError: number[] = [];
+  const riemannCorrection: number[] = [];
+  const boundsUpper: number[] = [];
+  const boundsLower: number[] = [];
+
+  const zeros = RIEMANN_ZEROS.slice(0, numZeros);
+
+  for (let i = 0; i < xValues.length; i++) {
+    const x = xValues[i];
+    const liX = logIntegral(x);
+    liValues.push(liX);
+    actualError.push(piX[i] - liX);
+
+    // Approximate Riemann Correction for pi(x) - Li(x)
+    // Core term: - (2 * sqrt(x) / ln(x)) * sum( sin(gamma * ln(x)) / gamma )
+    let sum = 0;
+    if (x > 2) {
+      const lnX = Math.log(x);
+      const sqrtX = Math.sqrt(x);
+      for (const gamma of zeros) {
+        sum += Math.sin(gamma * lnX) / gamma;
+      }
+      riemannCorrection.push(- (2 * sqrtX / lnX) * sum);
+    } else {
+      riemannCorrection.push(0);
+    }
+
+    // Theoretical bounds: +/- sqrt(x) * ln(x) / 8*pi is a nice visual envelope
+    const bound = x > 1 ? (Math.sqrt(x) * Math.log(x)) / (8 * Math.PI) : 0;
+    boundsUpper.push(bound);
+    boundsLower.push(-bound);
+  }
+
+  return { xValues, piX, liValues, actualError, riemannCorrection, boundsUpper, boundsLower };
+}
+
+/**
  * Primality check for small integers
  */
-function isPrimeNumber(n: number): boolean {
+export function isPrimeNumber(n: number): boolean {
   if (n < 2) return false;
   if (n === 2 || n === 3) return true;
   if (n % 2 === 0 || n % 3 === 0) return false;
@@ -130,6 +186,26 @@ function isPrimeNumber(n: number): boolean {
     if (n % i === 0 || n % (i + 2) === 0) return false;
   }
   return true;
+}
+
+/**
+ * Get unique prime factors of a number
+ */
+export function getUniquePrimeFactors(n: number): number[] {
+  if (n < 2) return [];
+  const factors = new Set<number>();
+  let d = 2;
+  let temp = n;
+  while (temp >= d * d) {
+    if (temp % d === 0) {
+      factors.add(d);
+      temp /= d;
+    } else {
+      d++;
+    }
+  }
+  if (temp > 1) factors.add(temp);
+  return Array.from(factors);
 }
 
 /**
@@ -149,9 +225,7 @@ export function calculateChebyshevPsi(x: number): number {
 
 function getPrimePowerFactor(n: number): { p: number; k: number } | null {
   for (let p = 2; p <= n; p++) {
-    // We must check if p is prime to avoid non-prime "powers"
     if (!isPrimeNumber(p)) continue;
-    
     let temp = n;
     let k = 0;
     while (temp > 1 && temp % p === 0) {
