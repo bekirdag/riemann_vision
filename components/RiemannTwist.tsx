@@ -1,10 +1,9 @@
-
 import React, { useState, useMemo } from 'react';
 import Plot from 'react-plotly.js';
 
 const RiemannTwist: React.FC = () => {
   const [n, setN] = useState<number>(2);
-  const [t, setT] = useState<number>(0);
+  const [t, setT] = useState<number>(2.0); // Initial state set to 2.0 as requested
   const [sigma, setSigma] = useState<number>(1);
   const [showTrace, setShowTrace] = useState<boolean>(true);
 
@@ -17,13 +16,12 @@ const RiemannTwist: React.FC = () => {
     const currentX = magnitude * Math.cos(angle);
     const currentY = magnitude * Math.sin(angle);
 
-    // Trace path
+    // Trace path: from the real axis (t=0) to the current point
     const traceX: number[] = [];
     const traceY: number[] = [];
     const steps = 200;
-    const maxT = Math.max(t, 10);
     for (let i = 0; i <= steps; i++) {
-      const stepT = (i / steps) * maxT;
+      const stepT = (i / steps) * t;
       const stepAngle = stepT * lnN;
       traceX.push(magnitude * Math.cos(stepAngle));
       traceY.push(magnitude * Math.sin(stepAngle));
@@ -93,14 +91,14 @@ const RiemannTwist: React.FC = () => {
         <div className="lg:col-span-2 bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl relative">
           <Plot
             data={[
-              // Circular Path
+              // Dash arc trace connecting point back to real axis
               {
                 x: data.traceX,
                 y: data.traceY,
                 type: 'scatter',
                 mode: 'lines',
-                name: 'Path',
-                line: { color: 'rgba(99, 102, 241, 0.2)', width: 2, dash: 'dot' },
+                name: 'Rotation Trace',
+                line: { color: 'rgba(99, 102, 241, 0.4)', width: 2, dash: 'dash' },
                 visible: showTrace
               },
               // Origin to Point Vector
@@ -148,7 +146,7 @@ const RiemannTwist: React.FC = () => {
           />
           
           <div className="absolute bottom-4 right-4 bg-slate-950/80 p-3 rounded-lg border border-slate-800 flex items-center gap-3">
-             <span className="text-[10px] text-slate-500 uppercase font-bold">Show Rotation Path</span>
+             <span className="text-[10px] text-slate-500 uppercase font-bold">Show Rotation Trace</span>
              <button 
                onClick={() => setShowTrace(!showTrace)}
                className={`w-10 h-5 rounded-full relative transition-colors ${showTrace ? 'bg-indigo-600' : 'bg-slate-700'}`}
