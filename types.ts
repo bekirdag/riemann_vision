@@ -5,6 +5,7 @@ export interface ComplexData {
 }
 
 export enum ViewMode {
+  INTRO_MYSTERY = 'INTRO_MYSTERY',
   ZERO_HUNTER = 'ZERO_HUNTER',
   LANDSCAPE_3D = 'LANDSCAPE_3D',
   PRIME_STAIRCASE = 'PRIME_STAIRCASE',

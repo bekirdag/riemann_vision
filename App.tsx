@@ -9,8 +9,10 @@ import HarmonicSynthesis from './components/HarmonicSynthesis';
 import AtomicWave from './components/AtomicWave';
 import MixingDeck from './components/MixingDeck';
 import DerivativeLink from './components/DerivativeLink';
+import IntroMystery from './components/IntroMystery';
 
 const VIEW_SEQUENCE = [
+  { mode: ViewMode.INTRO_MYSTERY, label: "0. The Great Mystery", color: "bg-slate-700" },
   { mode: ViewMode.CONCEPT_MAP, label: "1. The Concept Map", color: "bg-cyan-600" },
   { mode: ViewMode.LANDSCAPE_3D, label: "2. The Landscape", color: "bg-cyan-600" },
   { mode: ViewMode.ZERO_HUNTER, label: "3. The Zero Hunter", color: "bg-cyan-600" },
@@ -27,7 +29,7 @@ const App: React.FC = () => {
   const [tEnd, setTEnd] = useState<number>(30);
   const [iterations, setIterations] = useState<number>(150);
   const [xMax, setXMax] = useState<number>(100);
-  const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.CONCEPT_MAP);
+  const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.INTRO_MYSTERY);
   
   // Custom Formula State
   const [formulaInput, setFormulaInput] = useState<string>("x / (log(x) - 1.08366)");
@@ -144,6 +146,7 @@ const App: React.FC = () => {
                 viewMode !== ViewMode.MIXING_DECK && 
                 viewMode !== ViewMode.HARMONIC_SYNTHESIS &&
                 viewMode !== ViewMode.ATOMIC_WAVE &&
+                viewMode !== ViewMode.INTRO_MYSTERY &&
                 viewMode !== ViewMode.DERIVATIVE_LINK ? (
               <>
                 <section className="mb-6">
@@ -191,6 +194,7 @@ const App: React.FC = () => {
                <div className="p-4 bg-slate-950/50 rounded-lg border border-slate-800">
                 <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-2">Description</h4>
                 <p className="text-xs text-slate-400 leading-tight">
+                  {viewMode === ViewMode.INTRO_MYSTERY && "Primes appear random and unpredictable. Is there a hidden order?"}
                   {viewMode === ViewMode.CONCEPT_MAP && "A spatial overview of the complex plane and the locations of the zeros."}
                   {viewMode === ViewMode.ATOMIC_WAVE && "Watch how a single zero creates a vibrational frequency in log-space."}
                   {viewMode === ViewMode.MIXING_DECK && "Combining harmonics to isolate prime signals through interference."}
@@ -207,6 +211,8 @@ const App: React.FC = () => {
           <p className="text-[11px] text-slate-500 leading-tight">
             {viewMode === ViewMode.PRIME_STAIRCASE 
               ? "Verification: See how the theoretical synthesis matches the actual number line."
+              : viewMode === ViewMode.INTRO_MYSTERY
+              ? "Primes are the building blocks of all numbers, yet they follow no simple pattern."
               : viewMode === ViewMode.CONCEPT_MAP
               ? "All non-trivial zeros are conjectured to lie exactly on the line Re(s) = 0.5."
               : viewMode === ViewMode.MIXING_DECK
@@ -226,6 +232,7 @@ const App: React.FC = () => {
       {/* Main Visualization Canvas */}
       <main className="flex-1 p-4 md:p-8 relative min-h-0 flex flex-col">
         <div className="w-full h-full relative flex-1 mb-4">
+          {viewMode === ViewMode.INTRO_MYSTERY && <IntroMystery />}
           {viewMode === ViewMode.CONCEPT_MAP && <ConceptMap />}
           {viewMode === ViewMode.DERIVATIVE_LINK && <DerivativeLink />}
           {viewMode === ViewMode.ZERO_HUNTER && <ZeroHunter tStart={tStart} tEnd={tEnd} iterations={iterations} />}
