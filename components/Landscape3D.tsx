@@ -65,11 +65,17 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
               diffuse: 0.8,
               specular: 0.5,
               roughness: 0.5
-            }
+            },
+            hovertemplate: 'Re(s): %{x:.2f}<br>Im(s): %{y:.2f}<br>|ζ(s)|: %{z:.4f}<extra></extra>'
           }
         ]}
         layout={{
           autosize: true,
+          hoverlabel: {
+            bgcolor: '#1e293b',
+            bordercolor: '#22d3ee',
+            font: { color: '#ffffff', family: 'monospace', size: 13 }
+          },
           title: {
             text: 'Complex Landscape (Color = Phase)',
             font: { color: '#f8fafc', size: 18 }

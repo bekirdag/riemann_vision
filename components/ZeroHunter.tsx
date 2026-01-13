@@ -59,7 +59,8 @@ const ZeroHunter: React.FC<ZeroHunterProps> = ({ tStart, tEnd, iterations }) => 
             name: '|ζ(1/2 + it)|',
             line: { color: '#22d3ee', width: 2 },
             fill: 'tozeroy',
-            fillcolor: 'rgba(34, 211, 238, 0.1)'
+            fillcolor: 'rgba(34, 211, 238, 0.1)',
+            hovertemplate: '<b>s = 0.5 + %{x:.4f}i</b><br>|ζ(s)|: %{y:.6f}<extra></extra>'
           },
           {
             x: [tStart, tEnd],
@@ -67,11 +68,18 @@ const ZeroHunter: React.FC<ZeroHunterProps> = ({ tStart, tEnd, iterations }) => 
             type: 'scatter',
             mode: 'lines',
             name: 'Zero Line',
-            line: { color: '#64748b', dash: 'dash', width: 1 }
+            line: { color: '#64748b', dash: 'dash', width: 1 },
+            hoverinfo: 'skip'
           }
         ]}
         layout={{
           autosize: true,
+          hovermode: 'closest',
+          hoverlabel: {
+            bgcolor: '#1e293b',
+            bordercolor: '#22d3ee',
+            font: { color: '#ffffff', family: 'monospace', size: 13 }
+          },
           title: {
             text: 'Magnitude along the Critical Line (Re(s) = 0.5)',
             font: { color: '#f8fafc', size: 18 }
