@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
 import { calculateZeta, Complex } from '../services/mathUtils';
@@ -101,7 +100,7 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('pole');
         setCamera({
-          eye: { x: 1.5, y: -1.5, z: 0.5 },
+          eye: { x: 2.0, y: -2.0, z: 1.0 },
           center: { x: 0, y: -0.5, z: -0.2 },
           up: { x: 0, y: 0, z: 1 }
         });
@@ -139,8 +138,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('zeros');
         setCamera({
-          eye: { x: 0.5, y: 0.5, z: 2.5 },
-          center: { x: 0, y: 0, z: -0.5 },
+          eye: { x: 0.1, y: 0.1, z: 3.5 },
+          center: { x: 0, y: 0, z: 0 },
           up: { x: 0, y: 0, z: 1 }
         });
       }
