@@ -31,8 +31,8 @@ const VIEW_SEQUENCE = [
   // Act IV: The Connection
   { mode: ViewMode.ATOMIC_WAVE, label: "7. The Atomic Wave", color: "bg-amber-600", act: "Act IV: The Connection" },
   { mode: ViewMode.MIXING_DECK, label: "8. The Mixing Deck", color: "bg-indigo-600", act: "Act IV: The Connection" },
-  { mode: ViewMode.HARMONIC_SYNTHESIS, label: "9. Harmonic Synthesis", color: "bg-rose-600", act: "Act IV: The Connection" },
-  { mode: ViewMode.DERIVATIVE_LINK, label: "10. The Derivative Link", color: "bg-emerald-600", act: "Act IV: The Connection" },
+  { mode: ViewMode.DERIVATIVE_LINK, label: "9. The Derivative Link", color: "bg-emerald-600", act: "Act IV: The Connection" },
+  { mode: ViewMode.HARMONIC_SYNTHESIS, label: "10. Harmonic Synthesis", color: "bg-rose-600", act: "Act IV: The Connection" },
   { mode: ViewMode.PRIME_STAIRCASE, label: "11. Prime Verification", color: "bg-cyan-600", act: "Act IV: The Connection" },
 ];
 
