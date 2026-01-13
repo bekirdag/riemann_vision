@@ -17,9 +17,6 @@ const HARMONIC_COLORS = [
   '#ef4444'  // Red
 ];
 
-/**
- * Small SVG component to visualize the specific frequency of a harmonic
- */
 const HarmonicSparkline: React.FC<{ gamma: number; color: string; active: boolean }> = ({ gamma, color, active }) => {
   const points = 40;
   const width = 80;
@@ -28,11 +25,10 @@ const HarmonicSparkline: React.FC<{ gamma: number; color: string; active: boolea
   const pathData = useMemo(() => {
     let d = `M 0 ${height / 2}`;
     for (let i = 0; i <= points; i++) {
-      const x = (i / points) * width;
-      // Use log scale matching the main plot roughly for visual consistency
+      const xCoord = (i / points) * width;
       const xVal = 2 + (i / points) * 20; 
       const y = (height / 2) + (Math.cos(gamma * Math.log(xVal)) * (height / 2.5));
-      d += ` L ${x} ${y}`;
+      d += ` L ${xCoord} ${y}`;
     }
     return d;
   }, [gamma]);
@@ -53,17 +49,24 @@ const MixingDeck: React.FC = () => {
   const activeCount = activeHarmonics.filter(Boolean).length;
 
   const data = useMemo(() => {
-    const steps = 600;
+    const steps = 800; // High resolution for precise alignment
     const xValues: number[] = [];
     const individualWaves: number[][] = Array.from({ length: 10 }, () => []);
     const sumWave: number[] = [];
 
+    const startX = 2;
+    const endX = xLimit;
+    const stepSize = (endX - startX) / steps;
+
     for (let i = 0; i <= steps; i++) {
-      const x = 2 + (i / steps) * (xLimit - 2);
+      // CRITICAL FIX: The current x-coordinate is explicitly derived from the iterator.
+      // We use this exact same value for both the plot axis and the log calculation.
+      const x = startX + i * stepSize;
       xValues.push(x);
       
       let rawSum = 0;
       for (let gIdx = 0; gIdx < gammas.length; gIdx++) {
+        // Calculation and coordinate are strictly 1:1 linked
         const val = Math.cos(gammas[gIdx] * Math.log(x));
         individualWaves[gIdx].push(val);
         if (activeHarmonics[gIdx]) {
@@ -165,7 +168,6 @@ const MixingDeck: React.FC = () => {
       onExploreFreely={() => setIsUnlocked(true)}
     >
       <div className="w-full h-full flex flex-col gap-4 overflow-hidden">
-        {/* Top Stats Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-2xl gap-4 shrink-0">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-slate-950 rounded-lg flex items-center justify-center border border-slate-800 shadow-inner">
@@ -198,7 +200,6 @@ const MixingDeck: React.FC = () => {
         </div>
 
         <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
-          {/* Left: Harmonic Selection with Sparklines */}
           <aside className="lg:w-80 flex flex-col bg-slate-900/40 rounded-xl border border-slate-800/50 overflow-hidden">
             <div className="p-3 border-b border-slate-800 bg-slate-900/60 flex justify-between items-center">
               <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Harmonic Conductor</h3>
@@ -237,7 +238,6 @@ const MixingDeck: React.FC = () => {
             </div>
           </aside>
 
-          {/* Right: Main Plot with Ghost Traces */}
           <div className="flex-1 bg-slate-900 rounded-2xl border-2 border-slate-800 overflow-hidden shadow-2xl relative flex flex-col min-h-0">
              <div className="p-4 border-b border-slate-800 bg-slate-950/30 flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-3">
@@ -250,7 +250,6 @@ const MixingDeck: React.FC = () => {
              <div className="flex-1 relative">
                 <Plot
                   data={[
-                    // Ghost Traces (Individual Waves) - Only visible if activeCount < 3
                     ...((activeCount > 0 && activeCount < 3) ? gammas.map((g, i) => {
                       if (!activeHarmonics[i]) return null;
                       return {
@@ -265,7 +264,6 @@ const MixingDeck: React.FC = () => {
                       };
                     }).filter(Boolean) : []),
                     
-                    // Main Sum Line
                     {
                       x: data.xValues,
                       y: data.sumWave,
@@ -275,10 +273,9 @@ const MixingDeck: React.FC = () => {
                       line: { color: '#ffffff', width: 3, shape: 'spline' },
                       fill: 'tozeroy',
                       fillcolor: 'rgba(255,255,255,0.03)',
-                      hovertemplate: 'x: %{x:.2f}<br>Amplitude: %{y:.4f}<extra></extra>'
+                      hovertemplate: 'x: %{x:.4f}<br>Amplitude: %{y:.4f}<extra></extra>'
                     },
                     
-                    // Prediction Markers (only if enough harmonics active)
                     ...(activeCount >= 5 ? [
                       {
                         x: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59],
@@ -286,7 +283,7 @@ const MixingDeck: React.FC = () => {
                         type: 'scatter',
                         mode: 'markers',
                         name: 'Primes',
-                        marker: { color: '#22d3ee', size: 6, symbol: 'triangle-down' },
+                        marker: { color: '#22d3ee', size: 12, symbol: 'triangle-down' },
                         hoverinfo: 'name'
                       }
                     ] : [])
@@ -321,7 +318,6 @@ const MixingDeck: React.FC = () => {
                   config={{ responsive: true, displayModeBar: false }}
                 />
 
-                {/* Legend Toggle Info Overlay */}
                 {!isUnlocked && activeCount < 3 && (
                    <div className="absolute top-6 right-6 bg-slate-950/80 p-3 rounded-lg border border-indigo-500/30 max-w-[160px] pointer-events-none animate-in fade-in slide-in-from-right-4 duration-500">
                      <p className="text-[10px] text-indigo-300 leading-tight">
