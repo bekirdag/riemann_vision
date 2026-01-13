@@ -20,10 +20,10 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [currentStepId, setCurrentStepId] = useState('terrain');
   
-  // Plotly camera state
+  // Plotly camera state using relative coordinates to prevent black screen bugs
   const [camera, setCamera] = useState<Camera>({
-    eye: { x: 1.8, y: 1.8, z: 1.8 },
-    center: { x: 0, y: 0, z: -0.2 },
+    eye: { x: 1.6, y: 1.6, z: 1.6 },
+    center: { x: 0, y: 0, z: 0 },
     up: { x: 0, y: 0, z: 1 }
   });
 
@@ -55,7 +55,7 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
         const zeta = calculateZeta(s, iterations);
         let mag = zeta.abs();
         
-        // Clamp Z-axis
+        // Clamp Z-axis to prevent pole at s=1 from flattening everything
         if (mag > 10) mag = 10;
         
         rowZ.push(mag);
@@ -82,8 +82,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('terrain');
         setCamera({
-          eye: { x: 1.8, y: 1.8, z: 1.8 },
-          center: { x: 0, y: 0, z: -0.2 },
+          eye: { x: 1.6, y: 1.6, z: 1.6 },
+          center: { x: 0, y: 0, z: 0 },
           up: { x: 0, y: 0, z: 1 }
         });
       }
@@ -101,8 +101,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('pole');
         setCamera({
-          eye: { x: 2.5, y: -0.5, z: 0.5 },
-          center: { x: 1, y: 0, z: 0 },
+          eye: { x: 1.5, y: -1.5, z: 0.5 },
+          center: { x: 0, y: -0.5, z: -0.2 },
           up: { x: 0, y: 0, z: 1 }
         });
       }
@@ -120,8 +120,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('valley');
         setCamera({
-          eye: { x: 0.1, y: -2.5, z: 1.5 },
-          center: { x: 0.5, y: 10, z: 0 },
+          eye: { x: 0, y: -2.2, z: 0.8 },
+          center: { x: 0, y: 0, z: -0.3 },
           up: { x: 0, y: 0, z: 1 }
         });
       }
@@ -139,8 +139,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('zeros');
         setCamera({
-          eye: { x: 1.5, y: 0.5, z: 0.8 },
-          center: { x: 0.5, y: 14.13, z: 0 },
+          eye: { x: 0.5, y: 0.5, z: 1.2 },
+          center: { x: 0.2, y: 0, z: -0.4 },
           up: { x: 0, y: 0, z: 1 }
         });
       }
@@ -211,7 +211,7 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
               zaxis: { title: '|ζ(s)|', range: [0, 10], color: '#94a3b8', gridcolor: '#1e293b' },
               camera: camera,
               aspectmode: 'manual',
-              aspectratio: { x: 1, y: 3, z: 1 }
+              aspectratio: { x: 2, y: 4, z: 2 }
             },
             paper_bgcolor: 'rgba(0,0,0,0)',
             plot_bgcolor: 'rgba(0,0,0,0)',
