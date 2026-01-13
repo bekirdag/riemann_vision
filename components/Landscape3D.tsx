@@ -120,8 +120,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('valley');
         setCamera({
-          eye: { x: 0, y: -2.2, z: 0.8 },
-          center: { x: 0, y: 0, z: -0.3 },
+          eye: { x: 0, y: -2.8, z: 2.0 },
+          center: { x: 0, y: 0, z: -0.5 },
           up: { x: 0, y: 0, z: 1 }
         });
       }
@@ -139,8 +139,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('zeros');
         setCamera({
-          eye: { x: 0.5, y: 0.5, z: 1.2 },
-          center: { x: 0.2, y: 0, z: -0.4 },
+          eye: { x: 0.5, y: 0.5, z: 2.5 },
+          center: { x: 0, y: 0, z: -0.5 },
           up: { x: 0, y: 0, z: 1 }
         });
       }
