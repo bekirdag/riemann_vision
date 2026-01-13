@@ -18,8 +18,8 @@ const VIEW_SEQUENCE = [
   { mode: ViewMode.INTRO_MYSTERY, label: "0. The Great Mystery", color: "bg-slate-700" },
   { mode: ViewMode.EULER_GOLDEN_KEY, label: "1. Euler's Golden Key", color: "bg-amber-600" },
   { mode: ViewMode.RIEMANN_TWIST, label: "2. Riemann's Twist", color: "bg-indigo-600" },
-  { mode: ViewMode.CONCEPT_MAP, label: "3. The Concept Map", color: "bg-cyan-600" },
-  { mode: ViewMode.HYPOTHESIS_STATEMENT, label: "4. The Hypothesis", color: "bg-cyan-600" },
+  { mode: ViewMode.HYPOTHESIS_STATEMENT, label: "3. The Hypothesis", color: "bg-cyan-600" },
+  { mode: ViewMode.CONCEPT_MAP, label: "4. The Concept Map", color: "bg-cyan-600" },
   { mode: ViewMode.LANDSCAPE_3D, label: "5. The Landscape", color: "bg-cyan-600" },
   { mode: ViewMode.ZERO_HUNTER, label: "6. The Zero Hunter", color: "bg-cyan-600" },
   { mode: null, label: "DIVIDER" }, // Divider marker
