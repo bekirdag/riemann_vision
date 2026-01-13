@@ -22,14 +22,12 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
   
   // Plotly camera state
   const [camera, setCamera] = useState<Camera>({
-    eye: { x: 2.2, y: 2.2, z: 2.2 },
-    center: { x: 0, y: 10, z: 0 },
+    eye: { x: 1.8, y: 1.8, z: 1.8 },
+    center: { x: 0, y: 0, z: -0.2 },
     up: { x: 0, y: 0, z: 1 }
   });
 
   // Calculate high-resolution data for the tour and sandbox
-  // If locked, we use a fixed range to ensure the narrative points are visible.
-  // If unlocked, we follow the sidebar range.
   const activeTStart = isUnlocked ? tStart : 0;
   const activeTEnd = isUnlocked ? tEnd : 30;
 
@@ -84,8 +82,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('terrain');
         setCamera({
-          eye: { x: 2.2, y: 2.2, z: 2.2 },
-          center: { x: 0, y: 10, z: 0 },
+          eye: { x: 1.8, y: 1.8, z: 1.8 },
+          center: { x: 0, y: 0, z: -0.2 },
           up: { x: 0, y: 0, z: 1 }
         });
       }
@@ -103,7 +101,7 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('pole');
         setCamera({
-          eye: { x: 0.5, y: -1.5, z: 1.5 },
+          eye: { x: 2.5, y: -0.5, z: 0.5 },
           center: { x: 1, y: 0, z: 0 },
           up: { x: 0, y: 0, z: 1 }
         });
@@ -122,8 +120,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('valley');
         setCamera({
-          eye: { x: 3.5, y: 0, z: 0.5 },
-          center: { x: 0.5, y: 15, z: 0 },
+          eye: { x: 0.1, y: -2.5, z: 1.5 },
+          center: { x: 0.5, y: 10, z: 0 },
           up: { x: 0, y: 0, z: 1 }
         });
       }
@@ -141,7 +139,7 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
       action: () => {
         setCurrentStepId('zeros');
         setCamera({
-          eye: { x: 1.5, y: 14.13, z: 2.0 },
+          eye: { x: 1.5, y: 0.5, z: 0.8 },
           center: { x: 0.5, y: 14.13, z: 0 },
           up: { x: 0, y: 0, z: 1 }
         });
@@ -149,11 +147,9 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
     }
   ];
 
-  // Helper for highlighting the critical strip
   const stripHighlight = useMemo(() => {
     if (currentStepId !== 'valley') return [];
     
-    // We create a thin surface at z=0 representing the strip
     const stripX = [0, 1];
     const stripY = [activeTStart, activeTEnd];
     const stripZ = [[0, 0], [0, 0]];
@@ -214,7 +210,8 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
               yaxis: { title: 'Im(s)', color: '#94a3b8', gridcolor: '#1e293b', range: [activeTStart, activeTEnd] },
               zaxis: { title: '|ζ(s)|', range: [0, 10], color: '#94a3b8', gridcolor: '#1e293b' },
               camera: camera,
-              aspectratio: { x: 1, y: 2, z: 1 }
+              aspectmode: 'manual',
+              aspectratio: { x: 1, y: 3, z: 1 }
             },
             paper_bgcolor: 'rgba(0,0,0,0)',
             plot_bgcolor: 'rgba(0,0,0,0)',
@@ -224,14 +221,12 @@ const Landscape3D: React.FC<Landscape3DProps> = ({ tStart, tEnd, iterations }) =
           className="w-full h-full"
           config={{ responsive: true }}
           onRelayout={(layout) => {
-            // Update internal camera state if user manually rotates in sandbox
             if (isUnlocked && layout['scene.camera']) {
               setCamera(layout['scene.camera']);
             }
           }}
         />
         
-        {/* Floating Controls for Sandbox Mode */}
         {isUnlocked && (
            <div className="absolute top-4 right-4 bg-slate-950/80 p-3 rounded-lg border border-slate-800 animate-in fade-in duration-500">
              <h4 className="text-[10px] font-black text-cyan-500 uppercase tracking-widest mb-1">Navigation</h4>
