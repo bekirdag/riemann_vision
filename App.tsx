@@ -6,6 +6,7 @@ import Landscape3D from './components/Landscape3D';
 import PrimeStaircase from './components/PrimeStaircase';
 import ConceptMap from './components/ConceptMap';
 import HarmonicSynthesis from './components/HarmonicSynthesis';
+import AtomicWave from './components/AtomicWave';
 
 const App: React.FC = () => {
   const [tStart, setTStart] = useState<number>(0);
@@ -70,6 +71,16 @@ const App: React.FC = () => {
                 2D Zero Hunter
               </button>
               <button
+                onClick={() => setViewMode(ViewMode.ATOMIC_WAVE)}
+                className={`w-full py-2 px-3 rounded-md text-xs font-medium transition-all ${
+                  viewMode === ViewMode.ATOMIC_WAVE
+                    ? 'bg-amber-600 text-white shadow-lg'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                The Atomic Wave
+              </button>
+              <button
                 onClick={() => setViewMode(ViewMode.HARMONIC_SYNTHESIS)}
                 className={`w-full py-2 px-3 rounded-md text-xs font-medium transition-all ${
                   viewMode === ViewMode.HARMONIC_SYNTHESIS
@@ -114,6 +125,13 @@ const App: React.FC = () => {
                <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-2">Explicit Formula</h4>
                <p className="text-xs text-slate-400 leading-tight">
                  Each zero adds a specific "vibration" to the number line. When combined, these vibrations cancel out between primes and constructively interfere at primes.
+               </p>
+            </section>
+          ) : viewMode === ViewMode.ATOMIC_WAVE ? (
+            <section className="p-4 bg-slate-950/50 rounded-lg border border-slate-800">
+               <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-2">Phasor Dynamics</h4>
+               <p className="text-xs text-slate-400 leading-tight">
+                 Observe how a single non-trivial zero creates a periodic wave in logarithmic space. Higher zeros represent higher frequencies.
                </p>
             </section>
           ) : viewMode !== ViewMode.PRIME_STAIRCASE ? (
@@ -218,6 +236,8 @@ const App: React.FC = () => {
               ? "The 'Trivial Zeros' occur at every negative even integer (-2, -4, -6...) and are perfectly understood."
               : viewMode === ViewMode.HARMONIC_SYNTHESIS
               ? "Bernhard Riemann's 'Explicit Formula' connects primes to zeros. Each zero acts as a frequency in the 'Music of the Primes'."
+              : viewMode === ViewMode.ATOMIC_WAVE
+              ? "The imaginary parts of the zeros are essentially 'vibrational frequencies'. Riemann realized they determine the 'waviness' of the prime distribution."
               : "The first zero occurs at t ≈ 14.13. Notice how the magnitude drops to 0 at these specific heights along the critical line."
             }
           </p>
@@ -245,6 +265,9 @@ const App: React.FC = () => {
           )}
           {viewMode === ViewMode.HARMONIC_SYNTHESIS && (
             <HarmonicSynthesis />
+          )}
+          {viewMode === ViewMode.ATOMIC_WAVE && (
+            <AtomicWave />
           )}
         </div>
       </main>
