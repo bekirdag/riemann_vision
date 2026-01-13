@@ -1,0 +1,5 @@
+{
+  "name": "Riemann Vision",
+  "description": "An interactive educational tool for visualizing the Riemann Hypothesis using Dirichlet Eta approximations, featuring 2D magnitude plots and 3D complex landscapes.",
+  "requestFramePermissions": []
+}
