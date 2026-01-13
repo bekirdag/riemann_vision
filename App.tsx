@@ -5,6 +5,7 @@ import ZeroHunter from './components/ZeroHunter';
 import Landscape3D from './components/Landscape3D';
 import PrimeStaircase from './components/PrimeStaircase';
 import ConceptMap from './components/ConceptMap';
+import HarmonicSynthesis from './components/HarmonicSynthesis';
 
 const App: React.FC = () => {
   const [tStart, setTStart] = useState<number>(0);
@@ -69,6 +70,16 @@ const App: React.FC = () => {
                 2D Zero Hunter
               </button>
               <button
+                onClick={() => setViewMode(ViewMode.HARMONIC_SYNTHESIS)}
+                className={`w-full py-2 px-3 rounded-md text-xs font-medium transition-all ${
+                  viewMode === ViewMode.HARMONIC_SYNTHESIS
+                    ? 'bg-rose-600 text-white shadow-lg'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Harmonic Synthesis
+              </button>
+              <button
                 onClick={() => setViewMode(ViewMode.LANDSCAPE_3D)}
                 className={`w-full py-2 px-3 rounded-md text-xs font-medium transition-all ${
                   viewMode === ViewMode.LANDSCAPE_3D
@@ -97,6 +108,13 @@ const App: React.FC = () => {
               <p className="text-xs text-slate-400 leading-tight">
                 This diagram provides a spatial overview of the key mathematical structures discussed in the Riemann Hypothesis.
               </p>
+            </section>
+          ) : viewMode === ViewMode.HARMONIC_SYNTHESIS ? (
+            <section className="p-4 bg-slate-950/50 rounded-lg border border-slate-800">
+               <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-2">Explicit Formula</h4>
+               <p className="text-xs text-slate-400 leading-tight">
+                 Each zero adds a specific "vibration" to the number line. When combined, these vibrations cancel out between primes and constructively interfere at primes.
+               </p>
             </section>
           ) : viewMode !== ViewMode.PRIME_STAIRCASE ? (
             <>
@@ -198,6 +216,8 @@ const App: React.FC = () => {
               ? "Legendre discovered that subtracting ~1.08366 from the logarithm makes the curve fit much better at small scales."
               : viewMode === ViewMode.CONCEPT_MAP
               ? "The 'Trivial Zeros' occur at every negative even integer (-2, -4, -6...) and are perfectly understood."
+              : viewMode === ViewMode.HARMONIC_SYNTHESIS
+              ? "Bernhard Riemann's 'Explicit Formula' connects primes to zeros. Each zero acts as a frequency in the 'Music of the Primes'."
               : "The first zero occurs at t ≈ 14.13. Notice how the magnitude drops to 0 at these specific heights along the critical line."
             }
           </p>
@@ -222,6 +242,9 @@ const App: React.FC = () => {
               customFormula={plottedFormula} 
               onFormulaError={setFormulaError}
             />
+          )}
+          {viewMode === ViewMode.HARMONIC_SYNTHESIS && (
+            <HarmonicSynthesis />
           )}
         </div>
       </main>

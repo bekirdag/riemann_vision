@@ -102,3 +102,64 @@ export function calculatePrimeData(max: number) {
   
   return { xValues, piX, gaussApprox, isPrime };
 }
+
+/**
+ * First 50 non-trivial zeros (imaginary parts γ)
+ */
+export const RIEMANN_ZEROS = [
+  14.134725, 21.022040, 25.010858, 30.424876, 32.935062, 
+  37.586178, 40.918719, 43.327073, 48.005151, 49.773832, 
+  52.970321, 56.446248, 59.347044, 60.831779, 65.112544, 
+  67.079811, 69.546402, 72.067158, 75.704691, 77.144840, 
+  79.337375, 82.910381, 84.735493, 87.425275, 88.809111, 
+  92.491899, 94.651344, 95.870634, 98.831194, 101.317851, 
+  103.725538, 105.446623, 107.168611, 111.029536, 111.874659, 
+  114.320221, 116.226680, 118.790724, 121.370125, 122.946829, 
+  124.256819, 127.516483, 129.578704, 131.087688, 133.497737, 
+  134.756510, 138.116042, 139.736209, 141.123707, 143.111846
+];
+
+/**
+ * Primality check for small integers
+ */
+function isPrimeNumber(n: number): boolean {
+  if (n < 2) return false;
+  if (n === 2 || n === 3) return true;
+  if (n % 2 === 0 || n % 3 === 0) return false;
+  for (let i = 5; i * i <= n; i += 6) {
+    if (n % i === 0 || n % (i + 2) === 0) return false;
+  }
+  return true;
+}
+
+/**
+ * Chebyshev Function psi(x) = sum_{p^k <= x} ln p
+ */
+export function calculateChebyshevPsi(x: number): number {
+  if (x < 2) return 0;
+  let sum = 0;
+  for (let n = 2; n <= x; n++) {
+    const factors = getPrimePowerFactor(n);
+    if (factors) {
+      sum += Math.log(factors.p);
+    }
+  }
+  return sum;
+}
+
+function getPrimePowerFactor(n: number): { p: number; k: number } | null {
+  for (let p = 2; p <= n; p++) {
+    // We must check if p is prime to avoid non-prime "powers"
+    if (!isPrimeNumber(p)) continue;
+    
+    let temp = n;
+    let k = 0;
+    while (temp > 1 && temp % p === 0) {
+      temp /= p;
+      k++;
+    }
+    if (temp === 1 && k > 0) return { p, k };
+    if (temp < 1) break;
+  }
+  return null;
+}
